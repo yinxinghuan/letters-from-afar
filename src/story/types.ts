@@ -30,6 +30,7 @@ export interface StoryRecordedTrack {
 
 export interface StoryRecordedAudio {
   music?: StoryRecordedTrack
+  ambience?: StoryRecordedTrack
   ambienceByLocationId?: Record<string, StoryRecordedTrack>
   cues?: Partial<Record<StoryAudioCueName, StoryRecordedTrack>>
 }

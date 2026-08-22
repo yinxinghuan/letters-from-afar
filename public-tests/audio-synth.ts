@@ -34,12 +34,13 @@ const recordedTheme: StoryAudioTheme = {
   tension: [],
   recorded: {
     music: { src: 'road-theme.mp3', gain: .22 },
+    ambience: { src: 'road.mp3', gain: .3 },
     ambienceByLocationId: { 'old-post-office': { src: 'coast.mp3', gain: .34 } },
     cues: { travel: { src: 'arrival.mp3', gain: .62 } },
   },
 }
 assert.equal(resolveRecordedAmbience(recordedTheme, 'old-post-office')?.src, 'coast.mp3')
-assert.equal(resolveRecordedAmbience(recordedTheme, 'unknown-place'), undefined)
+assert.equal(resolveRecordedAmbience(recordedTheme, 'unknown-place')?.src, 'road.mp3')
 assert.equal(RECORDED_SOUND_PROFILE.maxCueVoices, 4)
 assert.ok(RECORDED_SOUND_PROFILE.musicRepeatDelayMs >= 5_000)
 assert.ok(RECORDED_SOUND_PROFILE.ambienceRepeatDelayMs >= 5_000)

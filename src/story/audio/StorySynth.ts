@@ -19,7 +19,7 @@ export const RECORDED_SOUND_PROFILE = {
 } as const
 
 export function resolveRecordedAmbience(theme: StoryAudioTheme, locationId?: string): StoryRecordedTrack | undefined {
-  return locationId ? theme.recorded?.ambienceByLocationId?.[locationId] : undefined
+  return (locationId ? theme.recorded?.ambienceByLocationId?.[locationId] : undefined) ?? theme.recorded?.ambience
 }
 
 function safeTrackGain(track: StoryRecordedTrack | undefined): number {
