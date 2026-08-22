@@ -535,7 +535,6 @@ function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge
   const restoredSaveChecked = useRef(false)
   const audioInitialized = useRef(false)
   const audioBlockCount = useRef(0)
-  const readyAudioImages = useRef<Set<string>>(new Set())
   const lastAudioError = useRef('')
   const setTextSize = (size: TextSize) => { alteruLocalStorage.setItem(TEXT_SIZE_KEY, size); setTextSizeState(size) }
   const openWorld = (active: DrawerId = worldTab, detail: WorldDetail | null = null) => {
@@ -603,11 +602,9 @@ function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge
 
   useEffect(() => {
     if (!engine.loaded) return
-    const readyImages = new Set(engine.save.blocks.filter((block) => block.kind === 'image' && block.data?.status === 'ready').map((block) => block.id))
     if (!audioInitialized.current) {
       audioInitialized.current = true
       audioBlockCount.current = engine.save.blocks.length
-      readyAudioImages.current = readyImages
       return
     }
     const added = engine.save.blocks.slice(audioBlockCount.current)
@@ -615,9 +612,7 @@ function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge
       const cue = chooseStoryAudioCue(added)
       if (cue) audio.cue(cue)
     }
-    readyImages.forEach((id) => { if (!readyAudioImages.current.has(id)) audio.cue('image') })
     audioBlockCount.current = engine.save.blocks.length
-    readyAudioImages.current = readyImages
   }, [audio.cue, engine.loaded, engine.save.blocks])
 
   useEffect(() => {

@@ -3,27 +3,19 @@ import assert from 'node:assert/strict';
 const paths = [
   {
     id: 'inspect-postmark',
-    beats: [8, 8, 9, 8],
-    firstChoice: 10,
-    routeDecision: 42,
+    beats: [7, 7, 8],
+    firstChoice: 9,
+    routeDecision: 40,
     payoff: 96,
-    stateChanges: ['clue:+1', 'route:tide-post-known', 'depart:saltmarsh']
+    stateChanges: ['future-date:seen', 'clue:+1', 'depart:saltmarsh']
   },
   {
     id: 'ask-ada',
-    beats: [8, 8, 9, 8],
-    firstChoice: 12,
-    routeDecision: 48,
-    payoff: 112,
-    stateChanges: ['character:ada-known', 'promise:undelivered-reply', 'depart:north-ferry']
-  },
-  {
-    id: 'follow-route-mark',
-    beats: [8, 8, 9, 8],
-    firstChoice: 9,
-    routeDecision: 38,
-    payoff: 84,
-    stateChanges: ['shared-trace:seen', 'route:saltmarsh-safer', 'depart:saltmarsh']
+    beats: [7, 7, 8],
+    firstChoice: 10,
+    routeDecision: 44,
+    payoff: 108,
+    stateChanges: ['mail-slot:checked', 'future-date:seen', 'depart:saltmarsh']
   }
 ];
 

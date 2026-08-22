@@ -25,38 +25,40 @@ function applyAuthored(save: ReturnType<typeof createInitialSave>, action: strin
 
 const initial = createInitialSave(lettersFromAfar)
 assert.equal(initial.location, '漂港·旧邮局')
-assert.equal(initial.choices.length, 3)
+assert.equal(initial.choices.length, 2)
 assert.equal(initial.characters.length, 1, 'future cast remains hidden until visible debut')
 assert.equal(initial.characters[0].id, 'ada-vale')
 
-const [inspectLabel, askLabel, traceLabel] = initial.choices.map((choice) => choice.label)
-for (const label of [inspectLabel, askLabel, traceLabel]) {
+const [inspectLabel, askLabel] = initial.choices.map((choice) => choice.label)
+for (const label of [inspectLabel, askLabel]) {
   const authored = resolveDeterministicOpeningTurn(initial, lettersFromAfar, label)!
   const canonical = canonicalizeTurnMetadata(initial, parseStoryProtocol(authored.content, 'zh'), lettersFromAfar, authored.imagePrompt, label, true)
   const canonicalChoices = canonical.parsed.commands.find((command) => command.type === 'choices')
-  assert.ok(canonicalChoices?.type === 'choices' && canonicalChoices.choices.length === 3, `canonical pipeline preserves all three authored replies: ${label}; got ${canonicalChoices?.type === 'choices' ? canonicalChoices.choices.join(' / ') : 'none'}`)
+  assert.ok(canonicalChoices?.type === 'choices' && canonicalChoices.choices.length === 2, `canonical pipeline preserves both close authored replies: ${label}; got ${canonicalChoices?.type === 'choices' ? canonicalChoices.choices.join(' / ') : 'none'}`)
   assert.deepEqual(validateTurnConsistency(initial, canonical.parsed, lettersFromAfar, canonical.imagePrompt, label), [], `full turn pipeline accepts opening branch: ${label}`)
 }
 const inspected = applyAuthored(initial, inspectLabel)
 const asked = applyAuthored(initial, askLabel)
-const traced = applyAuthored(initial, traceLabel)
+assert.equal(inspected.stats.clues, 0, 'the first action reveals the impossible date without front-loading a scored clue')
+assert.equal(asked.relationships.length, 0, 'checking the slot does not manufacture a relationship promise')
+assert.deepEqual(inspected.choices.map((choice) => choice.label), asked.choices.map((choice) => choice.label), 'both first actions converge on two close, usable follow-ups')
 
-assert.equal(inspected.stats.clues, 1, 'postmark path gives the first verified clue immediately')
-assert.ok(asked.relationships.some((event) => event.characterId === 'ada-vale'), 'Ada path records a visible relationship event')
-assert.ok(traced.inventory.some((item) => item.label === '盐沼共享路迹'), 'shared-trace path yields a concrete route object')
-assert.notDeepEqual(inspected.choices.map((choice) => choice.label), asked.choices.map((choice) => choice.label), 'opening branches do not collapse into identical recommendations')
-assert.notDeepEqual(asked.choices.map((choice) => choice.label), traced.choices.map((choice) => choice.label), 'people and shared-world branches remain distinct')
-assert.equal(inspected.choices.find((choice) => choice.label.includes('盐沼'))?.targetLocationId, 'saltmarsh-causeway', 'the first route is recognized as concrete travel and survives the full UI filter')
-const inspectedAuthored = resolveDeterministicOpeningTurn(initial, lettersFromAfar, inspectLabel)!
-const inspectedPrepared = prepareTurnCandidate({ save: initial, parsed: parseStoryProtocol(inspectedAuthored.content, 'zh'), cartridge: lettersFromAfar, action: inspectLabel, imagePrompt: inspectedAuthored.imagePrompt, trustedAuthored: true, skipTurnValidation: true })
-const inspectedThroughUiPipeline = applyParsedScene(initial, inspectedPrepared.parsed, lettersFromAfar, inspectLabel, inspectedPrepared.imagePrompt, inspectedAuthored.imageSubject, undefined, undefined, inspectedAuthored.imageCharacterId)
-assert.ok(inspectedThroughUiPipeline.choices.some((choice) => choice.targetLocationId === 'saltmarsh-causeway'), 'trusted authored route survives the same prepare/apply pipeline used by the UI')
+const cabinetAction = inspected.choices.find((choice) => choice.label.includes('档案柜'))?.label
+assert.ok(cabinetAction)
+const cabinet = applyAuthored(inspected, cabinetAction)
+assert.equal(cabinet.stats.clues, 1, 'the second action turns the missing old stamp into a verified clue')
+assert.equal(cabinet.choices.find((choice) => choice.label.includes('盐沼'))?.targetLocationId, 'saltmarsh-causeway', 'the route appears only after it becomes usable')
 
-const saltAction = inspected.choices.find((choice) => choice.label.includes('盐沼'))?.label
+const firstLineAction = asked.choices.find((choice) => choice.label.includes('第一行'))?.label
+assert.ok(firstLineAction)
+const firstLine = applyAuthored(asked, firstLineAction)
+assert.ok(firstLine.choices.some((choice) => choice.targetLocationId === 'saltmarsh-causeway'), 'reading one line produces the same grounded departure without extra lore')
+
+const saltAction = cabinet.choices.find((choice) => choice.label.includes('盐沼'))?.label
 assert.ok(saltAction)
-const saltmarsh = applyAuthored(inspected, saltAction)
+const saltmarsh = applyAuthored(cabinet, saltAction)
 assert.equal(saltmarsh.location, '盐沼旧堤')
-assert.equal(saltmarsh.stats.energy, inspected.stats.energy - 8)
+assert.equal(saltmarsh.stats.energy, cabinet.stats.energy - 8)
 assert.ok(saltmarsh.characters.some((character) => character.id === 'mira-sol'), 'Mira appears only after her visible introduction')
 assert.equal(saltmarsh.choices.length, 3, `saltmarsh arrival keeps three executable choices: ${saltmarsh.choices.map((choice) => choice.label).join(' / ')}`)
 assert.ok(saltmarsh.choices.every((choice) => /米拉|邮棚|投信箱|漂港/.test(choice.label)), 'arrival choices address the live tide incident')
@@ -71,17 +73,6 @@ assert.ok(ropePayoff.relationships.some((event) => event.characterId === 'mira-s
 assert.ok(ropePayoff.choices.length >= 1, 'first route payoff keeps an executable next action')
 for (const choice of ropePayoff.choices) {
   assert.ok(resolveDeterministicChoiceTurn(ropePayoff, lettersFromAfar, choice.label), `post-payoff recommendation has a deterministic continuation: ${choice.label}`)
-}
-
-const ferryAction = asked.choices.find((choice) => choice.label.includes('北渡口'))?.label
-assert.ok(ferryAction)
-const ferry = applyAuthored(asked, ferryAction)
-assert.equal(ferry.location, '北渡口')
-assert.ok(ferry.characters.some((character) => character.id === 'eli-rook'), 'Eli appears only after his visible introduction')
-assert.equal(ferry.choices.length, 3, `ferry arrival keeps three choices: ${ferry.choices.map((choice) => choice.label).join(' / ')}`)
-assert.ok(ferry.choices.every((choice) => /伊莱|船|渡/.test(choice.label)), 'ferry choices remain grounded in the repair-shed incident')
-for (const choice of ferry.choices) {
-  assert.ok(resolveDeterministicChoiceTurn(ferry, lettersFromAfar, choice.label), `ferry recommendation has a deterministic continuation: ${choice.label}`)
 }
 
 const rest = resolveDomainAction(saltmarsh, lettersFromAfar, '在废弃潮棚安全短休四十五分钟')
@@ -102,6 +93,16 @@ const energyBeforeWork = workInitial.stats.energy
 applyDomainResolution(workInitial, lettersFromAfar, shift!)
 assert.equal(workInitial.stats.coin, coinBeforeWork + 6, 'completed paid work settles money in the same authoritative turn')
 assert.equal(workInitial.stats.energy, energyBeforeWork - 6)
+const ferryAction = workInitial.choices.find((choice) => choice.label.includes('北渡口'))?.label
+assert.ok(ferryAction, 'the paid opening shift may reveal North Ferry after the opening mystery is established')
+const ferry = applyAuthored(workInitial, ferryAction)
+assert.equal(ferry.location, '北渡口')
+assert.ok(ferry.characters.some((character) => character.id === 'eli-rook'), 'Eli appears only after his visible introduction')
+assert.equal(ferry.choices.length, 3, `ferry arrival keeps three choices: ${ferry.choices.map((choice) => choice.label).join(' / ')}`)
+assert.ok(ferry.choices.every((choice) => /伊莱|船|渡/.test(choice.label)), 'ferry choices remain grounded in the repair-shed incident')
+for (const choice of ferry.choices) {
+  assert.ok(resolveDeterministicChoiceTurn(ferry, lettersFromAfar, choice.label), `ferry recommendation has a deterministic continuation: ${choice.label}`)
+}
 const duplicateShift = resolveDomainAction(workInitial, lettersFromAfar, '先帮艾达清点档案柜，确认少了什么')
 assert.equal(duplicateShift?.status, 'rejected', 'the same shift cannot loop for repeated pay and energy loss')
 
@@ -115,7 +116,7 @@ const inquirySave = createInitialSave(lettersFromAfar)
 assert.equal(resolveDomainAction(inquirySave, lettersFromAfar, '看看有没有路粮'), undefined, 'asking about supplies cannot spend money')
 
 const en = createInitialSave(lettersFromAfarEn)
-assert.equal(en.choices.length, 3)
+assert.equal(en.choices.length, 2)
 for (const choice of en.choices) assert.ok(resolveDeterministicOpeningTurn(en, lettersFromAfarEn, choice.label), `English opening turn exists for ${choice.label}`)
 
-console.log('Letters from Afar vertical slice: 3 opening paths, 2 route arrivals, rest, pay and purchase contracts passed.')
+console.log('Letters from Afar vertical slice: 2 progressive opening paths, 2 route arrivals, rest, pay and purchase contracts passed.')

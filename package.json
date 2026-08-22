@@ -32,6 +32,7 @@
     "test:image-director": "tsx public-tests/image-director.ts",
     "test:resume": "tsx public-tests/reading-anchor.ts",
     "test:audio": "tsx public-tests/audio-synth.ts",
+    "test:opening-density": "tsx public-tests/opening-density.ts",
     "test:stat-floor": "tsx public-tests/stat-floor.ts",
     "test:rest-recovery": "tsx public-tests/rest-recovery.ts",
     "test:generated-characters": "tsx public-tests/generated-character-persistence.ts",

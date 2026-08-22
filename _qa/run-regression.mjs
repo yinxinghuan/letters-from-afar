@@ -20,6 +20,7 @@ const scripts = [
   'test:image-director',
   'test:resume',
   'test:audio',
+  'test:opening-density',
   'test:stat-floor',
   'test:rest-recovery',
   'test:generated-characters',

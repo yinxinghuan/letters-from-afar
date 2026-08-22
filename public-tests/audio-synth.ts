@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { chooseStoryAudioCue } from '../src/story/audio/cueDirector'
 import { generateAudioMedia, MediaServiceError } from '../src/shared/runtime/media'
-import { createAmbientTexture, RECORDED_SOUND_PROFILE, resolveRecordedAmbience, SYNTH_AMBIENT_PROFILE } from '../src/story/audio/StorySynth'
+import { createAmbientTexture, RECORDED_SOUND_PROFILE, resolveRecordedAmbience, SFX_OUTPUT_PROFILE, SYNTH_AMBIENT_PROFILE } from '../src/story/audio/StorySynth'
 import type { StoryAudioTheme, StoryBlock } from '../src/story/types'
 
 function seededRandom(seed = 173): () => number {
@@ -41,7 +42,9 @@ const recordedTheme: StoryAudioTheme = {
 }
 assert.equal(resolveRecordedAmbience(recordedTheme, 'old-post-office')?.src, 'coast.mp3')
 assert.equal(resolveRecordedAmbience(recordedTheme, 'unknown-place')?.src, 'road.mp3')
-assert.equal(RECORDED_SOUND_PROFILE.maxCueVoices, 4)
+assert.equal(RECORDED_SOUND_PROFILE.maxCueVoices, 2)
+assert.ok(SFX_OUTPUT_PROFILE.gainScale <= .52)
+assert.ok(SFX_OUTPUT_PROFILE.minimumCueIntervalSeconds >= .18)
 assert.ok(RECORDED_SOUND_PROFILE.musicRepeatDelayMs >= 5_000)
 assert.ok(RECORDED_SOUND_PROFILE.ambienceRepeatDelayMs >= 5_000)
 await assert.rejects(
@@ -60,14 +63,18 @@ await assert.rejects(
 const block = (kind: StoryBlock['kind'], data: StoryBlock['data'] = {}, text = ''): StoryBlock => ({ id: `${kind}-${Math.random()}`, kind, text, data })
 assert.equal(chooseStoryAudioCue([block('change', { stat: 'coin', delta: 6 })]), 'coinGain')
 assert.equal(chooseStoryAudioCue([block('change', { stat: 'coin', delta: -3 })]), 'coinSpend')
-assert.equal(chooseStoryAudioCue([block('change', { stat: 'energy', delta: -7 })]), 'energy')
-assert.equal(chooseStoryAudioCue([block('change', { stat: 'renown', delta: 2 })]), 'standing')
+assert.equal(chooseStoryAudioCue([block('change', { stat: 'energy', delta: -7 })]), null)
+assert.equal(chooseStoryAudioCue([block('change', { stat: 'renown', delta: 2 })]), null)
 assert.equal(chooseStoryAudioCue([block('change', { relationshipChange: 'trusted' })]), 'relationship')
 assert.equal(chooseStoryAudioCue([block('event', { arrival: 'Silverleaf' })]), 'travel')
 assert.equal(chooseStoryAudioCue([block('change', { itemAction: 'add' })]), 'item')
 assert.equal(chooseStoryAudioCue([block('change', { itemAction: 'add', rarity: 'rare' })]), 'treasure')
 assert.equal(chooseStoryAudioCue([block('check', { outcome: 'success' })]), 'success')
 assert.equal(chooseStoryAudioCue([block('check', { outcome: 'failure' })]), 'failure')
+assert.equal(chooseStoryAudioCue([block('event')]), null)
 assert.equal(chooseStoryAudioCue([block('narration')]), null)
+
+const shell = await readFile(new URL('../src/story/StoryShell.tsx', import.meta.url), 'utf8')
+assert.doesNotMatch(shell, /audio\.cue\('image'\)/, 'image completion must stay silent')
 
 console.log('hybrid audio contract passed')

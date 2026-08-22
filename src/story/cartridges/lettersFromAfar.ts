@@ -100,20 +100,20 @@ function openingTurns(locale: Locale): Record<string, DemoTurn> {
   const zh = locale === 'zh'
   return {
     'inspect-postmark': {
-      match: [s(locale, '在灯下检查三年后的邮戳', 'Inspect the postmark dated three years ahead')],
+      match: [s(locale, '拿起信封，查看邮戳日期', 'Pick up the envelope and check the postmark date')],
       content: zh
-        ? `你把信移到分拣灯下。邮戳的圆边有两处缺口，和墙上那枚早已停用的“潮汐邮路”旧戳完全吻合；墨迹却是刚干的。信封背面还压着一行只有斜光下才能看见的小字：第一封回信，要从盐沼旧堤寄出。\n\n这不是仿造的纪念戳。有人在今天使用了一件三年前就被锁进档案柜的工具。\n\n艾达摊开路线图：盐沼旧堤步行约二十分钟，涨潮前可过，途中有一座旧邮棚；北渡口约三十五分钟，渡船停航，但修船棚今夜收过一袋旧信。\n\n[widget: clues, add: 1]\n[state: value="查明潮汐旧戳为何重新出现"]\n[choices: "前往盐沼旧堤，寻找旧邮路"|"去北渡口追查今夜靠岸的人"|"留在邮局帮艾达查旧戳领用记录"]`
-        : `You move the letter beneath the sorting lamp. Two chips in the circular postmark match the retired “Tide Route” stamp mounted on the wall, yet the ink has only just dried. In raking light, a pressed line appears on the envelope: the first reply must leave from Saltmarsh Causeway.\n\nThis is not a souvenir copy. Someone used a tool locked in the archive three years ago.\n\nAda opens the route map: Saltmarsh Causeway is about twenty minutes on foot and passable before high tide, with an old postal shelter along the way. North Ferry is about thirty-five minutes away; sailings are suspended, but its repair shed received a sack of old mail tonight.\n\n[widget: clues, add: 1]\n[state: value="Learn how the retired Tide Route stamp returned"]\n[choices: "Travel along Saltmarsh Causeway with the letter"|"Go to North Ferry and ask who landed tonight"|"Stay and help Ada audit the stamp log"]`,
+        ? `你把信封移到分拣灯下。邮戳上的日期是三年后的今天；翻到背面，你又认出那是自己的笔迹。\n\n艾达这才靠近。她指着邮戳圆边的两处缺口：“我见过这个形状。先看看旧戳还在不在，或者直接读信里写了什么。”\n\n[state: value="确认三年后的邮戳与自己的笔迹"]\n[choices: "和艾达检查档案柜里的旧邮戳"|"拆开信封，只读第一行"]`
+        : `You move the envelope beneath the sorting lamp. Its postmark is dated three years from today. When you turn it over, you recognise your own handwriting.\n\nOnly then does Ada step closer. She points to two chips in the postmark rim. “I have seen that shape. We can check whether the old stamp is still here—or read what the letter actually says.”\n\n[state: value="Confirm the postmark from three years ahead and your own handwriting"]\n[choices: "Check the old stamp in the archive cabinet with Ada"|"Open the envelope and read only the first line"]`,
       imageSubject: 'player',
       imagePrompt: 'FIRST-PERSON view down at a dry cream envelope under a green-shaded sorting lamp, one chipped circular postmark and pressed paper fibers visible but absolutely no readable letters or numbers, adult player entirely off-camera, storm-dark old coastal post office, cinematic editorial gouache, no hands, no text, no UI, 4:3',
     },
     'ask-ada': {
-      match: [s(locale, '让艾达说清她为何害怕这封信', 'Ask Ada why the letter frightens her')],
+      match: [s(locale, '请艾达检查投信口', 'Ask Ada to inspect the mail slot')],
       content: zh
-        ? `艾达没有碰信。她先摘下腰间的铜钥匙，打开墙边档案柜，里面本该放着潮汐旧戳的位置只剩一圈干净的灰。\n\n[艾达·维尔] [main] [压低声音]: “昨晚我亲手锁的。三年前，最后一批走这条邮路的人都没有等到回信。你若真要查，我会把每次来信的时间记下来；但你也答应我，发现第一处能寄信的地方就报平安。”\n\n你们约定：艾达替你保管所有来信记录，你在第一处旧邮站留下报平安的回执。她随后摊开路线图：盐沼旧堤步行约二十分钟，涨潮前可过并有旧邮棚；北渡口约三十五分钟，渡船停航，但修船棚今夜收过一袋旧信。\n\n[reputation: npc="艾达·维尔" action="made-a-visible-promise"]\n[state: value="在第一处旧邮站给艾达留下平安回执"]\n[choices: "前往盐沼旧堤，寻找旧邮站"|"去北渡口问今夜是否有人投递"|"先帮艾达清点档案柜，确认少了什么"]`
-        : `Ada does not touch the letter. She removes a brass key from her belt and opens the archive cabinet. Where the retired Tide Route stamp should be, only a clean circle remains in the dust.\n\n[Ada Vale] [main] [quietly]: “I locked it myself last night. Three years ago, the last people on that route never received their replies. If you investigate, I will log every letter that arrives—but promise me you will leave word at the first old post station you find.”\n\nYou agree: Ada will preserve the arrival record, and you will leave a safe-arrival receipt at the first old post station. She then opens the route map: Saltmarsh Causeway is about twenty minutes on foot and passable before high tide, with an old postal shelter. North Ferry is about thirty-five minutes away; sailings are suspended, but its repair shed received a sack of old mail tonight.\n\n[reputation: npc="Ada Vale" action="made-a-visible-promise"]\n[state: value="Leave Ada a safe-arrival receipt at the first old post station"]\n[choices: "Travel to Saltmarsh Causeway and find the old post station"|"Travel to North Ferry and ask whether anyone delivered mail tonight"|"Help Ada audit the cabinet before leaving"]`,
+        ? `艾达蹲下检查投信口。外侧铁片还在滴水，内侧也全湿，只有信封是干的；门外没有脚印，也没有人影。\n\n她把信递回来时看见邮戳日期，手停了一下：“这是三年后的今天。先看看旧戳还在不在，或者读信的第一行。”\n\n[state: value="查明干燥信封为何带着三年后的日期"]\n[choices: "和艾达检查档案柜里的旧邮戳"|"拆开信封，只读第一行"]`
+        : `Ada kneels to inspect the mail slot. The outer flap is still dripping and the inner metal is wet; only the envelope is dry. There are no footprints and no one outside.\n\nAs she hands it back, she notices the date and stops. “This is three years from today. We can check whether the old stamp is still here—or read the first line.”\n\n[state: value="Learn why the dry envelope bears a date three years ahead"]\n[choices: "Check the old stamp in the archive cabinet with Ada"|"Open the envelope and read only the first line"]`,
       imageSubject: 'others', imageCharacterId: 'ada-vale',
-      imagePrompt: 'FIRST-PERSON conversation view toward Ada Vale opening an old archive cabinet, adult woman age 34, cropped dark auburn hair, pale scar through right eyebrow, grey-green eyes, slate postal coat, her expression controlled but visibly afraid, empty circular space in cabinet dust, player off-camera, cinematic editorial gouache, no readable text, no UI, 4:3',
+      imagePrompt: 'FIRST-PERSON conversation view toward Ada Vale kneeling beside a rain-wet mail slot and holding a perfectly dry cream envelope, adult woman age 34, cropped dark auburn hair, pale scar through right eyebrow, grey-green eyes, slate postal coat, alert puzzled expression, player off-camera, cinematic editorial gouache, no readable text, no UI, 4:3',
     },
     'check-outside': {
       match: [s(locale, '查看门外是谁留下了干燥脚印', 'Check who left the dry footprints outside')],
@@ -137,6 +137,7 @@ function routeTurns(locale: Locale): DeterministicChoiceTurn[] {
     : `You pass the storm-bent harbor fence and reach North Ferry. Its closure board lies face down while a shallow-draft boat rests on repair rails. In the shed, a close-shaved man with a silver hoop in his left ear numbers each split plank. The name on his tool roll is “Eli Rook.”\n\nEli says an unregistered boat did land tonight. It carried no passengers, only a sack of old letters bound inland. He will let you inspect the seal, but first needs someone to hold a springing hull plank steady.\n\n[character_update: character_id="eli-rook" character="Eli Rook" role="Age 38 · North Ferry mechanic" detail="Repairing the shallow boat that received a sack of old letters tonight" vitality="70" stress="38"]\n[map_update: new_location="North Ferry" location_id="north-ferry" connected_to="Drift Harbor" detail="A suspended ferry whose repair shed holds the record of an unregistered boat"]\n[clock: value="Day 1 · 19:24"]\n[widget: energy, remove: 7]\n[choices: "Hold the hull plank for Eli, then inspect the mail sack seal"|"Inspect the unregistered boat's landing traces first"|"Ask Eli what the ferry still needs before it can reach the lakewoods"]`
 
   const routeActions = [
+    s(locale, '趁涨潮前带信前往盐沼旧堤', 'Take the letter to Saltmarsh Causeway before high tide'),
     s(locale, '前往盐沼旧堤，寻找旧邮路', 'Travel along Saltmarsh Causeway with the letter'),
     s(locale, '前往盐沼旧堤，寻找旧邮站', 'Travel to Saltmarsh Causeway and find the old post station'),
     s(locale, '趁潮位合适前往盐沼旧堤', 'Travel to Saltmarsh Causeway while the tide allows'),
@@ -147,6 +148,30 @@ function routeTurns(locale: Locale): DeterministicChoiceTurn[] {
     s(locale, '前往北渡口，确认另一条离港路线', 'Travel to North Ferry and check the second route'),
   ]
   const followups: DeterministicChoiceTurn[] = [
+    {
+      action: s(locale, '和艾达检查档案柜里的旧邮戳', 'Check the old stamp in the archive cabinet with Ada'),
+      when: { locations: [s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office')] },
+      turn: {
+        match: [s(locale, '和艾达检查档案柜里的旧邮戳', 'Check the old stamp in the archive cabinet with Ada')],
+        content: zh
+          ? `艾达打开档案柜。标着潮汐旧戳的位置只剩一圈干净的灰；那枚停用三年的邮戳不见了。\n\n斜光照过信封，一行压痕浮出来：第一封回信，要从盐沼旧堤寄出。艾达看向潮钟：“步行二十分钟。”领用簿最后还有一条今晚的记录：北渡口修船棚收过一袋旧信。\n\n[widget: clues, add: 1]\n[state: value="在盐沼回信与北渡口旧信袋之间选择线索"]\n[choices: "趁涨潮前带信前往盐沼旧堤"|"去北渡口追查今夜靠岸的人"|"拆开信封，只读第一行"]`
+          : `Ada opens the archive cabinet. A clean circle marks the place where the Tide Route stamp should be. The stamp retired three years ago is missing.\n\nUnder raking light, a pressed line appears on the envelope: the first reply must leave from Saltmarsh Causeway. Ada checks the tide clock. “Twenty minutes on foot.” The final log entry adds one alternative: North Ferry's repair shed received a sack of old mail tonight.\n\n[widget: clues, add: 1]\n[state: value="Choose between the Saltmarsh reply and the old mail sack at North Ferry"]\n[choices: "Take the letter to Saltmarsh Causeway before high tide"|"Go to North Ferry and ask who landed tonight"|"Open the envelope and read only the first line"]`,
+        imageSubject: 'others', imageCharacterId: 'ada-vale',
+        imagePrompt: 'FIRST-PERSON conversation view toward Ada Vale holding open an archive cabinet, one clearly empty circular space in the dust, controlled alarm in her expression, storm-dark old coastal post office, player off-camera, cinematic editorial gouache, no readable text, no UI, 4:3',
+      },
+    },
+    {
+      action: s(locale, '拆开信封，只读第一行', 'Open the envelope and read only the first line'),
+      when: { locations: [s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office')] },
+      turn: {
+        match: [s(locale, '拆开信封，只读第一行', 'Open the envelope and read only the first line')],
+        content: zh
+          ? `你拆开信封，只看第一行：涨潮前，到盐沼旧堤的旧邮棚回信。下面还有更多字，但你先把信折住。\n\n艾达指向潮钟：“那里步行二十分钟。你现在出发还能赶上；也可以先确认是谁动了档案柜里的旧戳。”\n\n[state: value="决定是否在涨潮前前往盐沼旧堤回信"]\n[choices: "趁涨潮前带信前往盐沼旧堤"|"和艾达检查档案柜里的旧邮戳"]`
+          : `You open the envelope and read only its first line: before high tide, reply from the old shelter on Saltmarsh Causeway. More writing follows, but you fold the page closed.\n\nAda points to the tide clock. “Twenty minutes on foot. You can still make it—or first confirm who moved the old stamp in the archive cabinet.”\n\n[state: value="Decide whether to reach Saltmarsh Causeway before high tide"]\n[choices: "Take the letter to Saltmarsh Causeway before high tide"|"Check the old stamp in the archive cabinet with Ada"]`,
+        imageSubject: 'player',
+        imagePrompt: 'FIRST-PERSON view down at a just-opened cream envelope beneath a green sorting lamp, only the top edge of one folded page visible with absolutely no readable marks, adult player entirely off-camera, storm-dark old coastal post office, cinematic editorial gouache, no hands, no text, no UI, 4:3',
+      },
+    },
     {
       action: s(locale, '和米拉固定第三根测路桩的绳索', 'Secure the rope at the third survey stake with Mira'),
       when: { locations: [s(locale, '盐沼旧堤', 'Saltmarsh Causeway')] },
@@ -363,18 +388,16 @@ function make(locale: Locale): StoryCartridge {
     opening: {
       location: s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office'),
       time: s(locale, '第 1 天 · 18:40', 'Day 1 · 18:40'),
-      objective: s(locale, '查明这封来自三年后的信如何进入旧邮局。', 'Learn how a letter from three years ahead entered the old post office.'),
+      objective: s(locale, '查清这封干燥的信是谁投入旧邮局的。', 'Learn who put the dry envelope through the old post office slot.'),
       imagePrompt: 'OBSERVER WIDE ESTABLISHING SHOT inside a storm-dark coastal post office at night, adult traveler seen small from behind at a wooden sorting counter, completely dry cream envelope beneath a green lamp, Ada Vale at the archive cabinet, rain on every window, cinematic editorial gouache, no readable text, no signage, no UI, 4:3',
       blocks: [
         { id: 'opening-1', kind: 'narration', text: s(locale, '风暴刚停。你在漂港旧邮局帮忙把被雨打湿的信移到高处，窗外的街道还泡在浅水里。', 'The storm has just stopped. Inside Drift Harbor’s old post office, you help move rain-soaked letters to high shelves while shallow water still covers the street.') },
         { id: 'opening-2', kind: 'narration', text: s(locale, '投信口忽然响了一声。一只完全干燥的奶油色信封落在湿地板上，像是刚从另一个房间递进来。', 'The mail slot clicks. A completely dry cream envelope lands on the wet floor as if passed from another room.') },
-        { id: 'opening-3', kind: 'narration', text: s(locale, '信封写着你的名字，笔迹也是你的。邮戳日期却在三年以后。', 'The envelope bears your name in your own handwriting. The postmark is dated three years ahead.') },
-        { id: 'opening-4', kind: 'dialogue', speaker: s(locale, '艾达·维尔', 'Ada Vale'), tone: s(locale, '克制的惊惧', 'controlled fear'), text: s(locale, '档案柜旁的女人停下钥匙。你认识她：旧邮局的临时代办员艾达·维尔。她盯着邮戳说：“我没有盖过它。那枚戳三年前就锁起来了。”', 'The woman at the archive cabinet stops turning her key. You know her: Ada Vale, the old post office’s acting keeper. Watching the mark, she says, “I did not stamp that. The stamp was locked away three years ago.”') },
+        { id: 'opening-3', kind: 'dialogue', speaker: s(locale, '艾达·维尔', 'Ada Vale'), tone: s(locale, '警觉', 'alert'), text: s(locale, '旧邮局的临时代办员艾达·维尔从档案柜旁转过身。她刚检查过门外：“外面没有人。这封信写的是你的名字。”', 'Ada Vale, the old post office’s acting keeper, turns from the archive cabinet. She has just checked outside. “No one is there. This envelope has your name on it.”') },
       ],
       choices: [
-        { id: 'inspect-postmark', label: s(locale, '在灯下检查三年后的邮戳', 'Inspect the postmark dated three years ahead') },
-        { id: 'ask-ada', label: s(locale, '让艾达说清她为何害怕这封信', 'Ask Ada why the letter frightens her') },
-        { id: 'check-outside', label: s(locale, '查看门外是谁留下了干燥脚印', 'Check who left the dry footprints outside') },
+        { id: 'inspect-postmark', label: s(locale, '拿起信封，查看邮戳日期', 'Pick up the envelope and check the postmark date') },
+        { id: 'ask-ada', label: s(locale, '请艾达检查投信口', 'Ask Ada to inspect the mail slot') },
       ],
       deterministicTurns: openings,
     },

@@ -36,6 +36,7 @@ assert.deepEqual(lettersFromAfar.initialMap.map((node) => node.id), lettersFromA
 assert.deepEqual(lettersFromAfar.characters.map((entry) => entry.id), lettersFromAfarEn.characters.map((entry) => entry.id), 'Chinese and English character IDs remain identical')
 
 let grass = act(initial, choice(initial, '邮戳'))
+grass = act(grass, choice(grass, '档案柜'))
 grass = act(grass, choice(grass, '盐沼旧堤'))
 grass = act(grass, choice(grass, '投信箱'))
 grass = act(grass, choice(grass, '核对最近三次退潮'))
@@ -49,6 +50,7 @@ assert.equal(grass.location, '横风农场')
 assert.ok(grass.choices.length === 3 && grass.choices.every((entry) => /风泵|传动轴|农工/.test(entry.label)), `farm arrival presents three concrete responses to the live water incident; got: ${grass.choices.map((entry) => entry.label).join(' / ')}`)
 
 let lake = act(createInitialSave(lettersFromAfar), choice(createInitialSave(lettersFromAfar), '艾达'))
+lake = act(lake, choice(lake, '档案柜'))
 lake = act(lake, choice(lake, '北渡口'))
 lake = act(lake, choice(lake, '稳住船板'))
 lake = act(lake, choice(lake, '辨认能沾上蓝灰树脂'))

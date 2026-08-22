@@ -32,6 +32,8 @@
 
 `useStoryEngine` 只通过 `commit()` 更新当前世界，并把完整 `StoryArchive` 写入 `useGameSave('letters-from-afar')`。确定性开场与首发路线先经过和 UI 相同的 `prepareTurnCandidate → applyParsedScene` 管线，避免测试绕过选项过滤、地点绑定或数值结算。
 
+开场采用两级确定性披露：`opening` 首屏仅保留三个可感知节拍和两个贴近信封/投信口的动作；`openingTurns()` 第一次行动揭示未来日期，`routeTurns()` 中的档案柜/首行回合第二次才揭示盐沼路线与潮汐时限。`public-tests/opening-density.ts` 同时限制中英文首屏长度、提前出现的专有名词、首个行动段落数和后续选择数。
+
 ### 异步共享世界
 
 客户端默认 API Base 为 `/<当前游戏 UUID>`；仅 `?local=1` 使用浏览器隔离存储演练。所有写入包含稳定 `action_id`、`expected_version`、`ruleset_id` 和玩家身份。服务端按动作 ID 缓存首次响应，按世界版本串行提交；两人竞争同一接力信时最多一人成功。
@@ -46,9 +48,11 @@
 
 ### 混合声音系统
 
-cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`discovery / relationship / summary` 可触发关键段落 B，其余短反馈仍由 Web Audio 合成。
+cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`relationship / summary` 可触发关键段落 B，其余低频短反馈仍由 Web Audio 合成。
 
-录制音乐和环境声不设置 `loop=true`：A 自然结束后至少等待 30 秒，环境声等待 7 秒再播放。B 播放时暂停 A、结束后恢复 A，同源 B 至少冷却 180 秒；切换静音、页面隐藏和组件卸载都会清理 B，恢复时不补播。播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。`public-tests/audio-synth.ts` 检查混合配置和地域选择，`_qa/world-expansion-inland.ts` 检查全部稳定地图节点都有环境声绑定。
+录制音乐和环境声不设置 `loop=true`：A 自然结束后至少等待 30 秒，环境声等待 7 秒再播放。B 播放时暂停 A、结束后恢复 A，同源 B 至少冷却 180 秒；切换静音、页面隐藏和组件卸载都会清理 B，恢复时不补播。播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。
+
+阅读音效有独立前景预算：普通选择只保留一次轻确认；普通正文、图片完成、精力与信迹变化静音，只有检定、旅费、稀有物、关系、危险、抵达与章节节点才产生结果提示。合成 SFX 乘 `0.52`，`180 ms` 内合并突发触发，合成瞬态声部上限为 6、录制短音效上限为 2。`public-tests/audio-synth.ts` 检查这些限制和语义选择，`_qa/world-expansion-inland.ts` 检查全部稳定地图节点都有环境声绑定。
 
 ## 4. 扩展点
 
