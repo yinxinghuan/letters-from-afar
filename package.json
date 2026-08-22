@@ -1,0 +1,55 @@
+{
+  "name": "letters-from-afar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "npm run test:slice",
+    "test:security": "node --import tsx public-tests/protocol-security.ts",
+    "test:choices": "node --import tsx public-tests/choice-contract.ts",
+    "test:payment": "node --import tsx public-tests/payment-consistency.ts",
+    "test:turn": "node --import tsx public-tests/turn-consistency.ts",
+    "test:dynamic-locations": "node --import tsx public-tests/dynamic-location-continuity.ts",
+    "test:pipeline": "node --import tsx public-tests/turn-pipeline.ts",
+    "test:deterministic-choices": "node --import tsx public-tests/deterministic-choice-turns.ts",
+    "test:domain": "node --import tsx public-tests/domain-choice-availability.ts",
+    "test:authority-shadow": "node --import tsx public-tests/domain-authority-shadow.ts",
+    "test:domain-continuity": "node --import tsx public-tests/domain-thread-continuity.ts",
+    "test:recovery-choice-priority": "node --import tsx public-tests/recovery-choice-priority.ts",
+    "test:active-thread": "node --import tsx public-tests/active-thread-continuity.ts",
+    "test:extended-continuity": "node --import tsx public-tests/extended-continuity-matrix.ts",
+    "test:choice-quality": "node --import tsx public-tests/recommended-choice-quality.ts",
+    "test:multiturn": "node --import tsx public-tests/multiturn-scenario-matrix.ts",
+    "test:world-expansion": "node --import tsx public-tests/world-expansion.ts",
+    "test:preset-events": "node --import tsx public-tests/preset-events.ts",
+    "test:image-director": "node --import tsx public-tests/image-director.ts",
+    "test:resume": "node --import tsx public-tests/reading-anchor.ts",
+    "test:audio": "node --import tsx public-tests/audio-synth.ts",
+    "test:stat-floor": "node --import tsx public-tests/stat-floor.ts",
+    "test:rest-recovery": "node --import tsx public-tests/rest-recovery.ts",
+    "test:generated-characters": "node --import tsx public-tests/generated-character-persistence.ts",
+    "test:danger": "node --import tsx public-tests/danger-director.ts",
+    "test:danger-loop": "node --import tsx public-tests/danger-loop.ts",
+    "test:loop-escape": "node --import tsx public-tests/loop-escape.ts",
+    "test:slice": "tsx _qa/vertical-slice.ts && tsx _qa/shared-world.ts && node _qa/worker-rules.mjs && node _design/first-five-minutes.mjs && node _design/route-simulator.mjs && node _design/campaign-simulator.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "less": "^4.2.0",
+    "tsx": "^4.23.5",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.21"
+  }
+}

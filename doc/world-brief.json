@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "gameId": "letters-from-afar",
+  "title": {
+    "zh": "远方来信",
+    "en": "Letters from Afar"
+  },
+  "mode": "asynchronous-shared-world-rpg",
+  "oneVisit": "complete one route segment, one active incident, or one relationship scene",
+  "continuity": "persistent personal journey plus versioned shared roads",
+  "playerRole": "an ordinary traveler carrying a letter signed by their future self",
+  "coreQuestion": "What must be preserved so people can still reach one another after the roads fail?",
+  "worldRules": [
+    "A years-long storm damaged roads and communications but did not end ordinary life.",
+    "The player may choose the order of regions and may ignore the main mystery for long periods.",
+    "A rare atmospheric event at the far white tower can send one physical letter three years backward.",
+    "Shared-world changes affect public routes and landmarks, never private relationships or endings directly.",
+    "Every visible option must be grounded in the current scene or authoritative known state."
+  ],
+  "regions": [
+    {"id":"rain_coast","zh":"雨港海岸","en":"Rain Coast","role":"starting coast and damaged postal network"},
+    {"id":"longwind_steppe","zh":"长风草原","en":"Longwind Steppe","role":"wide routes, farms, markets, and migrating communities"},
+    {"id":"lakewood","zh":"湖林地带","en":"Lakewood","role":"dense paths, ferries, hidden settlements, and intimate character stories"},
+    {"id":"broken_rail_basin","zh":"断轨盆地","en":"Broken Rail Basin","role":"rail towns, workshops, scarce transport, and labor conflicts"},
+    {"id":"redland_plateau","zh":"赤土高原","en":"Redland Plateau","role":"long sightlines, seasonal rivers, observatories, and route planning"},
+    {"id":"white_ridge","zh":"白脊山脉","en":"White Ridge","role":"snow passes, tunnels, isolation, and late-game risk"},
+    {"id":"farshore_isles","zh":"远岸群岛","en":"Farshore Isles","role":"lighthouses, tide post, the white tower, and final choices"}
+  ],
+  "mainMystery": {
+    "incitingLetter": "Do not take the shortest road. Find the people who never received a reply. Bring their names to the white tower.",
+    "truth": "The white tower can send one letter backward during a rare storm alignment; the future player used it after seeing which communities disappeared when the restored network favored speed over access.",
+    "chapterThresholds": [0, 1, 4, 8, 12],
+    "finalDecisions": [
+      "send the original warning and preserve the loop",
+      "send a different letter that changes the player's own journey",
+      "end backward delivery and convert the tower into an open relay",
+      "leave the mechanism unused and preserve only the human road network"
+    ]
+  },
+  "resources": [
+    {"id":"energy","zh":"精力","min":0,"max":100,"inverse":false},
+    {"id":"travel_funds","zh":"旅费","min":0,"max":99,"inverse":false},
+    {"id":"letter_clues","zh":"线索","min":0,"max":12,"inverse":false}
+  ],
+  "sharedLayers": [
+    "expiring traveler traces",
+    "receipt-backed relay letters",
+    "seasonal public roads",
+    "rule-created permanent landmarks"
+  ],
+  "contentTargets": {
+    "fixedPlaces": 30,
+    "fixedRoutes": 18,
+    "presetCharacters": 14,
+    "companions": 3,
+    "regionalEvents": 42,
+    "routeEvents": 28,
+    "characterEvents": 14,
+    "clueEvents": 12,
+    "publicProjects": 7,
+    "endingCombinationsMinimum": 6
+  },
+  "safetyBoundaries": [
+    "No private relationship, secret, free-text action, or unrevealed quest becomes public.",
+    "No single player free-text input creates a permanent shared place or rule.",
+    "No main ending requires multiplayer participation.",
+    "Failed generation never rolls back a committed shared action."
+  ]
+}
