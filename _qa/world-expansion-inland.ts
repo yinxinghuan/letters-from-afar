@@ -46,6 +46,8 @@ assert.equal(new Set(lettersFromAfar.initialMap.map((node) => node.id)).size, 24
 assert.equal(new Set(lettersFromAfar.characters.map((entry) => entry.id)).size, 10, 'cast has no duplicate IDs')
 assert.ok(lettersFromAfar.audioTheme.recorded?.music?.src, 'the world has a durable generated music bed')
 assert.ok(lettersFromAfar.audioTheme.recorded?.cues?.travel?.src, 'arrivals use the reviewed generated route cue')
+assert.ok(lettersFromAfar.audioTheme.levels.sfx <= .10, 'reading-mode synthesized feedback stays quiet')
+assert.ok((lettersFromAfar.audioTheme.recorded?.cues?.travel?.gain ?? 1) <= .28, 'route-arrival recording stays below the reading foreground')
 lettersFromAfar.initialMap.forEach((node) => {
   assert.ok(lettersFromAfar.audioTheme.recorded?.ambienceByLocationId?.[node.id]?.src, `map node ${node.id} has an authored regional ambience`)
 })

@@ -32,7 +32,7 @@
 
 `useStoryEngine` 只通过 `commit()` 更新当前世界，并把完整 `StoryArchive` 写入 `useGameSave('letters-from-afar')`。确定性开场与首发路线先经过和 UI 相同的 `prepareTurnCandidate → applyParsedScene` 管线，避免测试绕过选项过滤、地点绑定或数值结算。
 
-开场采用两级确定性披露：`opening` 首屏仅保留三个可感知节拍和两个贴近信封/投信口的动作；`openingTurns()` 第一次行动揭示未来日期，`routeTurns()` 中的档案柜/首行回合第二次才揭示盐沼路线与潮汐时限。`public-tests/opening-density.ts` 同时限制中英文首屏长度、提前出现的专有名词、首个行动段落数和后续选择数。
+开场采用两级确定性披露：`opening` 首屏以三个可感知节拍交代玩家的临时邮路员身份、明早递送积压邮件的职责、今晚因封路留守的原因，以及写着玩家名字但没有投递记录的干信封；仍只提供两个贴近信封/投信口的动作。`openingTurns()` 第一次行动揭示未来日期，`routeTurns()` 中的档案柜/首行回合第二次才揭示盐沼路线与潮汐时限。`public-tests/opening-density.ts` 同时检查角色身份/行动动机、限制中英文首屏长度、提前出现的专有名词、首个行动段落数和后续选择数。
 
 ### 异步共享世界
 
@@ -48,7 +48,7 @@
 
 ### 混合声音系统
 
-cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`relationship / summary` 可触发关键段落 B，其余低频短反馈仍由 Web Audio 合成。
+cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`relationship / summary` 可触发关键段落 B，其余低频短反馈仍由 Web Audio 合成。本作在引擎阅读模式衰减之外，再把合成反馈降到 `sfx: 0.10`、路线抵达录音降到 `gain: 0.28`；音乐和环境层保持不变。
 
 录制音乐和环境声不设置 `loop=true`：A 自然结束后至少等待 30 秒，环境声等待 7 秒再播放。B 播放时暂停 A、结束后恢复 A，同源 B 至少冷却 180 秒；切换静音、页面隐藏和组件卸载都会清理 B，恢复时不补播。播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。
 

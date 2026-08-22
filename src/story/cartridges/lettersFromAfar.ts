@@ -313,7 +313,7 @@ function make(locale: Locale): StoryCartridge {
     theme: { outer: '#101719', surface: '#182629', paper: '#E8E1CF', ink: '#263335', muted: '#74817C', accent: '#397F78', danger: '#B85F53', gold: '#C49358', material: 'wayfarer' },
     audioTheme: {
       material: 'wayfarer', bpm: 64, rootHz: 146.83, scale: [0, 2, 5, 7, 9],
-      levels: { music: 0.04, ambient: 0.12, sfx: 0.17, master: 0.72 },
+      levels: { music: 0.04, ambient: 0.12, sfx: 0.10, master: 0.72 },
       tension: [{ statId: 'energy', direction: 'low', weight: 0.45 }, { statId: 'coin', direction: 'low', weight: 0.2 }, { statId: 'clues', direction: 'low', weight: 0.35 }],
       recorded: {
         music: { src: roadThemeUrl, gain: 0.22 },
@@ -344,7 +344,7 @@ function make(locale: Locale): StoryCartridge {
           'meridian-observatory': { src: plateauAmbienceUrl, gain: 0.34 },
         },
         cues: {
-          travel: { src: routeArrivalUrl, gain: 0.62, role: 'effect' },
+          travel: { src: routeArrivalUrl, gain: 0.28, role: 'effect' },
           discovery: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
           relationship: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
           summary: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
@@ -358,6 +358,7 @@ function make(locale: Locale): StoryCartridge {
     director: {
       mode: 'open-world', maxActiveThreads: 3,
       fixedWorldRules: [
+        s(locale, '玩家是风暴后刚登记、明早接手内陆积压邮件的临时邮路员；艾达是旧邮局代办员，不能与玩家身份互换。', 'The player is the newly registered temporary route courier who takes the inland backlog tomorrow; Ada is the old post office keeper, and their roles must not be swapped.'),
         s(locale, '未来来信只能提供线索，不能替玩家决定路线或行动。', 'Future letters offer clues but never choose routes or actions for the player.'),
         s(locale, '地点、人物、路线、图片和选项必须引用同一个当前现场。', 'Location, characters, route, image and choices must all refer to the same current scene.'),
         s(locale, '共享世界只能改变公共环境与可选机会，不能替玩家完成私人任务。', 'The shared world changes public conditions and opportunities, never completing private quests.'),
@@ -377,7 +378,7 @@ function make(locale: Locale): StoryCartridge {
       methods: [s(locale, '先确认眼前证据和时间窗口', 'Confirm the evidence and time window'), s(locale, '承担代价继续当前承诺', 'Pay a cost to continue the current promise'), s(locale, '明确撤离并保留线索', 'Withdraw explicitly while preserving the clue')],
       physicalCombat: 'rare', resolution: { skill: s(locale, '判断', 'Judgment'), modifier: 2, dcBySeverity: [7, 9, 11, 13, 15], fallbackCosts: [{ statId: 'energy', operation: 'remove', amount: 10 }] },
     },
-    initialFacts: { world_day: 1, letters_received: 1, road_ration_bought: false, shared_world_cursor: 0 },
+    initialFacts: { player_role: s(locale, '漂港临时邮路员', 'Drift Harbor temporary route courier'), world_day: 1, letters_received: 1, road_ration_bought: false, shared_world_cursor: 0 },
     statDefinitions: [
       { id: 'energy', label: s(locale, '精力', 'Energy'), min: 0, max: 100, initial: 78, display: 'bar', inverse: true, warningAt: 28, dangerAt: 8, maxDelta: 24, domainMaxDelta: 36, description: s(locale, '还能承受多少赶路、工作和风险。安全短休恢复 20；精力归零后只能恢复、求助或撤回，旅程不会被清空。', 'How much travel, work and risk you can bear. A safe short rest restores 20; at zero, recover, seek help or withdraw without erasing the journey.'), floorRule: { threshold: 0, enteredText: s(locale, '你的精力耗尽，当前行动没有完成；原来的路线和后果仍然存在。', 'Your energy is exhausted and the action does not complete; the route and its consequences remain.'), blockedText: s(locale, '身体已经无法继续这项行动。先恢复、求助或撤回；当前旅程不会被清空。', 'You cannot physically continue this action. Recover, seek help or withdraw; the current journey remains.'), recoveryChoices: [s(locale, '原地安全短休四十五分钟', 'Take a safe forty-five-minute rest'), s(locale, '向当前认识的人求助', 'Ask a known person here for help'), s(locale, '撤回最近的安全地点', 'Withdraw to the nearest safe place')], allowedDomainRuleIds: ['catch-breath'] } },
       { id: 'coin', label: s(locale, '旅费', 'Travel coin'), min: 0, max: 99, initial: 8, display: 'number', unit: s(locale, '枚', ''), inverse: true, warningAt: 3, dangerAt: 0, maxDelta: 30, description: s(locale, '可以立即使用的旅费。只有玩家明确购买、乘车或住宿时才扣除；已完成工作当回合结算。', 'Spendable travel money. It is deducted only after an explicit purchase, fare or lodging choice; completed work pays in the same turn.') },
@@ -388,12 +389,12 @@ function make(locale: Locale): StoryCartridge {
     opening: {
       location: s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office'),
       time: s(locale, '第 1 天 · 18:40', 'Day 1 · 18:40'),
-      objective: s(locale, '查清这封干燥的信是谁投入旧邮局的。', 'Learn who put the dry envelope through the old post office slot.'),
+      objective: s(locale, '查清这封写着你名字的干信封从何而来。', 'Learn where the dry envelope bearing your name came from.'),
       imagePrompt: 'OBSERVER WIDE ESTABLISHING SHOT inside a storm-dark coastal post office at night, adult traveler seen small from behind at a wooden sorting counter, completely dry cream envelope beneath a green lamp, Ada Vale at the archive cabinet, rain on every window, cinematic editorial gouache, no readable text, no signage, no UI, 4:3',
       blocks: [
-        { id: 'opening-1', kind: 'narration', text: s(locale, '风暴刚停。你在漂港旧邮局帮忙把被雨打湿的信移到高处，窗外的街道还泡在浅水里。', 'The storm has just stopped. Inside Drift Harbor’s old post office, you help move rain-soaked letters to high shelves while shallow water still covers the street.') },
+        { id: 'opening-1', kind: 'narration', text: s(locale, '你是漂港刚登记的临时邮路员。明早道路一通，你就要替旧邮局把积压信件送往内陆；今晚风暴封路，你留下帮忙把受潮邮件移到高处。', 'You have just signed on as Drift Harbor’s temporary route courier. Once the road reopens tomorrow, you will carry the old post office’s backlogged mail inland; tonight the storm has closed the road, so you stay to move soaked letters to higher shelves.') },
         { id: 'opening-2', kind: 'narration', text: s(locale, '投信口忽然响了一声。一只完全干燥的奶油色信封落在湿地板上，像是刚从另一个房间递进来。', 'The mail slot clicks. A completely dry cream envelope lands on the wet floor as if passed from another room.') },
-        { id: 'opening-3', kind: 'dialogue', speaker: s(locale, '艾达·维尔', 'Ada Vale'), tone: s(locale, '警觉', 'alert'), text: s(locale, '旧邮局的临时代办员艾达·维尔从档案柜旁转过身。她刚检查过门外：“外面没有人。这封信写的是你的名字。”', 'Ada Vale, the old post office’s acting keeper, turns from the archive cabinet. She has just checked outside. “No one is there. This envelope has your name on it.”') },
+        { id: 'opening-3', kind: 'dialogue', speaker: s(locale, '艾达·维尔', 'Ada Vale'), tone: s(locale, '警觉', 'alert'), text: s(locale, '旧邮局的临时代办员艾达·维尔从档案柜旁转过身。她刚检查过门外：“外面没有人。这封信写着你的名字，也没有投递登记。明早的邮路由你接手，所以先由你决定怎么查。”', 'Ada Vale, the old post office’s acting keeper, turns from the archive cabinet after checking outside. “No one is there. This envelope bears your name, and there is no delivery entry. You take over the route tomorrow, so you decide how we examine it.”') },
       ],
       choices: [
         { id: 'inspect-postmark', label: s(locale, '拿起信封，查看邮戳日期', 'Pick up the envelope and check the postmark date') },
