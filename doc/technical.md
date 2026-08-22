@@ -14,7 +14,7 @@
 - `src/story/cartridges/lettersFromAfarInlandExpansion.ts`：第二批断轨盆地与赤土高原扩展；维护 4 名未来角色、9 个新增节点、两条区域链和终点后续调查。
 - `src/story/engine/`：协议解析、状态 reducer、选项一致性、地点绑定、危险、休息、工资和消费规则。
 - `src/story/audio/StorySynth.ts`：混合声音导演；管理录制音乐/地域环境层/路线提示、精确合成反馈、解锁、静音、后台暂停、并发上限与播放失败降级。
-- `src/story/audio/assets/`：1 段主题音乐、4 段地域环境层和 1 段路线抵达音效；全部作为 Vite 相对构建资产打包。
+- `src/story/audio/assets/`：1 段低密度阅读底乐 A、1 段关键段落配乐 B、4 段地域环境层和 1 段路线抵达音效；全部作为 Vite 相对构建资产打包。
 - `src/story/audio/useStoryAudio.ts`：把权威地点和数值张力传给声音导演，并避免存档完成加载前预取错误地点的环境声。
 - `src/story/useStoryEngine.ts`：个人存档、场景生成、行动管线与共享回执写入入口。
 - `src/shared/runtime/media.ts`：AlterU Media Service 图片/音频任务客户端；音频输入限制为 `music | sfx`、`0.5–120` 秒，轮询统一任务端点。
@@ -46,9 +46,9 @@
 
 ### 混合声音系统
 
-cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置主题音乐，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层，`cues` 只为适合持久化文件的事件覆盖合成提示。本游戏当前只用生成式文件覆盖 `travel`，其余短反馈仍由 Web Audio 合成。
+cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`discovery / relationship / summary` 可触发关键段落 B，其余短反馈仍由 Web Audio 合成。
 
-录制音乐和环境声不设置 `loop=true`：文件自然结束后分别等待 5 秒和 7 秒再从头播放。切换地点、静音、页面隐藏和组件卸载都会清理对应元素与计时器；播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。`public-tests/audio-synth.ts` 检查混合配置和地域选择，`_qa/world-expansion-inland.ts` 检查全部稳定地图节点都有环境声绑定。
+录制音乐和环境声不设置 `loop=true`：A 自然结束后至少等待 30 秒，环境声等待 7 秒再播放。B 播放时暂停 A、结束后恢复 A，同源 B 至少冷却 180 秒；切换静音、页面隐藏和组件卸载都会清理 B，恢复时不补播。播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。`public-tests/audio-synth.ts` 检查混合配置和地域选择，`_qa/world-expansion-inland.ts` 检查全部稳定地图节点都有环境声绑定。
 
 ## 4. 扩展点
 

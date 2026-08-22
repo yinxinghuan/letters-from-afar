@@ -26,6 +26,8 @@ export type StoryAudioCueName =
 export interface StoryRecordedTrack {
   src: string
   gain: number
+  role?: 'effect' | 'feature'
+  cooldownMs?: number
 }
 
 export interface StoryRecordedAudio {

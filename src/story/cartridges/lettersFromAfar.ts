@@ -13,6 +13,7 @@ import { lettersInlandCast, lettersInlandMap, lettersInlandTurns } from './lette
 const coverImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
 const entryImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
 const roadThemeUrl = new URL('../audio/assets/road-theme.mp3', import.meta.url).href
+const featureThemeUrl = new URL('../audio/assets/feature-theme.mp3', import.meta.url).href
 const coastAmbienceUrl = new URL('../audio/assets/ambience-coast.mp3', import.meta.url).href
 const openRoadAmbienceUrl = new URL('../audio/assets/ambience-open-road.mp3', import.meta.url).href
 const railAmbienceUrl = new URL('../audio/assets/ambience-rail.mp3', import.meta.url).href
@@ -317,7 +318,12 @@ function make(locale: Locale): StoryCartridge {
           'dryriver-station': { src: plateauAmbienceUrl, gain: 0.34 },
           'meridian-observatory': { src: plateauAmbienceUrl, gain: 0.34 },
         },
-        cues: { travel: { src: routeArrivalUrl, gain: 0.62 } },
+        cues: {
+          travel: { src: routeArrivalUrl, gain: 0.62, role: 'effect' },
+          discovery: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
+          relationship: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
+          summary: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
+        },
       },
     },
     itemImageDirection: 'EDITORIAL GOUACHE TRAVEL-ARCHIVE OBJECT, matte painted shapes, cold-press paper grain, weathered natural materials, storm-after palette of sea green, slate and amber. Object only, no people, no readable text, no letters, numbers, logos or UI.',
