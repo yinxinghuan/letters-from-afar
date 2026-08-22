@@ -12,6 +12,12 @@ import { lettersInlandCast, lettersInlandMap, lettersInlandTurns } from './lette
 
 const coverImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
 const entryImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
+const roadThemeUrl = new URL('../audio/assets/road-theme.mp3', import.meta.url).href
+const coastAmbienceUrl = new URL('../audio/assets/ambience-coast.mp3', import.meta.url).href
+const openRoadAmbienceUrl = new URL('../audio/assets/ambience-open-road.mp3', import.meta.url).href
+const railAmbienceUrl = new URL('../audio/assets/ambience-rail.mp3', import.meta.url).href
+const plateauAmbienceUrl = new URL('../audio/assets/ambience-plateau.mp3', import.meta.url).href
+const routeArrivalUrl = new URL('../audio/assets/sfx-route-arrival.mp3', import.meta.url).href
 
 const s = (locale: Locale, zh: string, en: string) => locale === 'zh' ? zh : en
 
@@ -279,7 +285,41 @@ function make(locale: Locale): StoryCartridge {
       itemImagingBody: s(locale, '不用等待；完成后会出现在行囊中。', 'No need to wait; it will appear in your pack when ready.'),
     },
     theme: { outer: '#101719', surface: '#182629', paper: '#E8E1CF', ink: '#263335', muted: '#74817C', accent: '#397F78', danger: '#B85F53', gold: '#C49358', material: 'wayfarer' },
-    audioTheme: { material: 'wayfarer', bpm: 64, rootHz: 146.83, scale: [0, 2, 5, 7, 9], levels: { music: 0.04, ambient: 0.12, sfx: 0.17, master: 0.72 }, tension: [{ statId: 'energy', direction: 'low', weight: 0.45 }, { statId: 'coin', direction: 'low', weight: 0.2 }, { statId: 'clues', direction: 'low', weight: 0.35 }] },
+    audioTheme: {
+      material: 'wayfarer', bpm: 64, rootHz: 146.83, scale: [0, 2, 5, 7, 9],
+      levels: { music: 0.04, ambient: 0.12, sfx: 0.17, master: 0.72 },
+      tension: [{ statId: 'energy', direction: 'low', weight: 0.45 }, { statId: 'coin', direction: 'low', weight: 0.2 }, { statId: 'clues', direction: 'low', weight: 0.35 }],
+      recorded: {
+        music: { src: roadThemeUrl, gain: 0.22 },
+        ambienceByLocationId: {
+          'drift-harbor': { src: coastAmbienceUrl, gain: 0.34 },
+          'old-post-office': { src: coastAmbienceUrl, gain: 0.34 },
+          'saltmarsh-causeway': { src: coastAmbienceUrl, gain: 0.34 },
+          'north-ferry': { src: coastAmbienceUrl, gain: 0.34 },
+          'beacon-yard': { src: coastAmbienceUrl, gain: 0.34 },
+          'longwind-gate': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'crosswind-farm': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'migrant-market': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'old-highway-lodge': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'whitebird-marsh': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'cedar-lake-gate': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'cedar-lake': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'floating-post': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'moss-bridge': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'glasshouse-clinic': { src: openRoadAmbienceUrl, gain: 0.34 },
+          'platform-city': { src: railAmbienceUrl, gain: 0.34 },
+          'roundhouse': { src: railAmbienceUrl, gain: 0.34 },
+          'copper-ridge': { src: railAmbienceUrl, gain: 0.34 },
+          'buried-branch': { src: railAmbienceUrl, gain: 0.34 },
+          'south-freight-yard': { src: railAmbienceUrl, gain: 0.34 },
+          'echo-canyon-road': { src: plateauAmbienceUrl, gain: 0.34 },
+          'rockhouse': { src: plateauAmbienceUrl, gain: 0.34 },
+          'dryriver-station': { src: plateauAmbienceUrl, gain: 0.34 },
+          'meridian-observatory': { src: plateauAmbienceUrl, gain: 0.34 },
+        },
+        cues: { travel: { src: routeArrivalUrl, gain: 0.62 } },
+      },
+    },
     itemImageDirection: 'EDITORIAL GOUACHE TRAVEL-ARCHIVE OBJECT, matte painted shapes, cold-press paper grain, weathered natural materials, storm-after palette of sea green, slate and amber. Object only, no people, no readable text, no letters, numbers, logos or UI.',
     sceneImageDirection: 'CINEMATIC EDITORIAL GOUACHE, matte opaque brush shapes, cold-press paper grain, storm-after road movie, sea green, slate, weathered cream and signal amber. Alternate genuine first-person perception with observer wide shots. No readable text, no signage, no UI.',
     sceneImageAvoid: 'centered avatar portrait, same camera angle repeatedly, generic fantasy city, readable letters, floating text, player face in first-person view',

@@ -4,7 +4,7 @@
 
 - React 18、TypeScript、Less、Vite 5；构建基址为 `./`，产物输出到 `dist/`。
 - 正文采用累积时间线，数值、地点、人物、关系、行囊和选择由结构化协议进入权威 reducer。
-- 场景图与物品图通过 AlterU Media Service 异步生成；生成失败不阻塞行动。
+- 场景图、物品图和可持久化音频资产通过 AlterU Media Service 生成；生成失败不阻塞行动。正式音频为 44.1kHz 双声道 MP3，运行时不直连模型供应商。
 - 异步共享世界使用同一游戏 UUID 下的 `/api/world/*`，服务端为 Cloudflare Durable Object SQLite。GitHub Pages 仅作静态镜像，不连接正式共享世界。
 
 ## 2. 目录结构
@@ -13,7 +13,11 @@
 - `src/story/cartridges/lettersFromAfarExpansion.ts`：第一批草原与湖林扩展；集中维护新增地点、未来角色及两条区域门的确定性回合。
 - `src/story/cartridges/lettersFromAfarInlandExpansion.ts`：第二批断轨盆地与赤土高原扩展；维护 4 名未来角色、9 个新增节点、两条区域链和终点后续调查。
 - `src/story/engine/`：协议解析、状态 reducer、选项一致性、地点绑定、危险、休息、工资和消费规则。
+- `src/story/audio/StorySynth.ts`：混合声音导演；管理录制音乐/地域环境层/路线提示、精确合成反馈、解锁、静音、后台暂停、并发上限与播放失败降级。
+- `src/story/audio/assets/`：1 段主题音乐、4 段地域环境层和 1 段路线抵达音效；全部作为 Vite 相对构建资产打包。
+- `src/story/audio/useStoryAudio.ts`：把权威地点和数值张力传给声音导演，并避免存档完成加载前预取错误地点的环境声。
 - `src/story/useStoryEngine.ts`：个人存档、场景生成、行动管线与共享回执写入入口。
+- `src/shared/runtime/media.ts`：AlterU Media Service 图片/音频任务客户端；音频输入限制为 `music | sfx`、`0.5–120` 秒，轮询统一任务端点。
 - `src/shared-world/engine.ts`：可在 Node 中测试的共享世界纯规则。
 - `src/shared-world/gateway.ts`：本机演练和同源远端 API 网关；未知响应以同一 action ID 对账。
 - `src/shared-world/useLettersWorld.ts`：共享快照、定时刷新、写入和未确认回执协调。
@@ -40,6 +44,12 @@
 
 图片导演在第一人称对话/证据镜头与观察者广角之间轮换，并禁止可读文字、标牌和 UI。所有运行时图片请求走媒体服务，代码中无媒体长期凭据。界面文案由 `src/story/i18n.ts` 提供中英文版本。
 
+### 混合声音系统
+
+cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置主题音乐，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层，`cues` 只为适合持久化文件的事件覆盖合成提示。本游戏当前只用生成式文件覆盖 `travel`，其余短反馈仍由 Web Audio 合成。
+
+录制音乐和环境声不设置 `loop=true`：文件自然结束后分别等待 5 秒和 7 秒再从头播放。切换地点、静音、页面隐藏和组件卸载都会清理对应元素与计时器；播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。`public-tests/audio-synth.ts` 检查混合配置和地域选择，`_qa/world-expansion-inland.ts` 检查全部稳定地图节点都有环境声绑定。
+
 ## 4. 扩展点
 
 - 加基础开场或首发事件：修改 `lettersFromAfar.ts`。草原/湖林内容修改 `lettersFromAfarExpansion.ts`；断轨盆地/赤土高原内容修改 `lettersFromAfarInlandExpansion.ts`。继续增加地区时按区域新建独立 cartridge，并同步 `doc/world-bible.md`、对应世界扩展测试与容量测试。
@@ -47,4 +57,5 @@
 - 加共享动作或公共实体：同时修改 `src/shared-world/types.ts`、纯规则 `engine.ts`、`worker/index.js`、网关与 Worker 测试；禁止只改前端。
 - 改私人接力物品：修改 `src/shared-world/receipt.ts`，保持“私人存档成功后再 ack”顺序。
 - 改视觉方向：修改 `doc/visual.md`、cartridge 图片导演字段和 Media Service prompt；不可改用 Imagine。
+- 改声音方向或换音频：先在独立媒体服务中生成候选并完成听审、响度/真峰值/时长/格式检查，再替换 `src/story/audio/assets/` 与 `audioTheme.recorded`；短促且需同帧精度的 UI 反馈继续修改 `StorySynth.ts`，不要改成远端运行时生成。
 - 接入平台强身份认证：在 Worker `/api/world/action`、`/grants`、`/grant/ack` 边界验证平台签名，并将 `PUBLIC_BETA` 关闭。

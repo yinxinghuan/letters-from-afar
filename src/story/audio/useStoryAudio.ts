@@ -28,10 +28,11 @@ export function useStoryAudio(cartridge: StoryCartridge, save: StorySave) {
   const [muted, setMutedState] = useState(readMuted)
   const [ready, setReady] = useState(false)
   const statSignature = cartridge.audioTheme.tension.map((source) => `${source.statId}:${save.stats[source.statId] ?? 0}`).join('|')
+  const locationId = save.entered ? save.map.find((node) => node.current)?.id : undefined
 
   useEffect(() => {
-    synthRef.current?.configure(cartridge.audioTheme, calculateTension(cartridge, save))
-  }, [cartridge, statSignature])
+    synthRef.current?.configure(cartridge.audioTheme, calculateTension(cartridge, save), locationId)
+  }, [cartridge, locationId, statSignature])
 
   useEffect(() => {
     synthRef.current?.setMuted(muted)

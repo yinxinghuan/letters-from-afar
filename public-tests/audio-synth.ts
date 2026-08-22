@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { chooseStoryAudioCue } from '../src/story/audio/cueDirector'
-import { createAmbientTexture, SYNTH_AMBIENT_PROFILE } from '../src/story/audio/StorySynth'
-import type { StoryBlock } from '../src/story/types'
+import { generateAudioMedia, MediaServiceError } from '../src/shared/runtime/media'
+import { createAmbientTexture, RECORDED_SOUND_PROFILE, resolveRecordedAmbience, SYNTH_AMBIENT_PROFILE } from '../src/story/audio/StorySynth'
+import type { StoryAudioTheme, StoryBlock } from '../src/story/types'
 
 function seededRandom(seed = 173): () => number {
   let state = seed >>> 0
@@ -27,6 +28,34 @@ const leftEnd = rms(left.slice(-edge))
 assert.ok(Math.abs(20 * Math.log10(leftStart / leftEnd)) < 4, 'loop edges must remain energy-compatible')
 assert.ok(Math.abs(left[0] - left.at(-1)!) < .08, 'loop boundary must not create a large click')
 
+const recordedTheme: StoryAudioTheme = {
+  material: 'wayfarer', bpm: 64, rootHz: 146.83, scale: [0, 2, 5, 7, 9],
+  levels: { music: .04, ambient: .12, sfx: .17, master: .72 },
+  tension: [],
+  recorded: {
+    music: { src: 'road-theme.mp3', gain: .22 },
+    ambienceByLocationId: { 'old-post-office': { src: 'coast.mp3', gain: .34 } },
+    cues: { travel: { src: 'arrival.mp3', gain: .62 } },
+  },
+}
+assert.equal(resolveRecordedAmbience(recordedTheme, 'old-post-office')?.src, 'coast.mp3')
+assert.equal(resolveRecordedAmbience(recordedTheme, 'unknown-place'), undefined)
+assert.equal(RECORDED_SOUND_PROFILE.maxCueVoices, 4)
+assert.ok(RECORDED_SOUND_PROFILE.musicRepeatDelayMs >= 5_000)
+assert.ok(RECORDED_SOUND_PROFILE.ambienceRepeatDelayMs >= 5_000)
+await assert.rejects(
+  () => generateAudioMedia({ sessionId: 'test-session', kind: 'sfx', prompt: 'test', durationSeconds: 0.25 }),
+  (error: unknown) => error instanceof MediaServiceError && error.code === 'INVALID_REQUEST',
+)
+await assert.rejects(
+  () => generateAudioMedia({ sessionId: ' ', kind: 'music', prompt: 'test', durationSeconds: 5 }),
+  (error: unknown) => error instanceof MediaServiceError && error.code === 'INVALID_REQUEST',
+)
+await assert.rejects(
+  () => generateAudioMedia({ sessionId: 'test-session', kind: 'music', prompt: ' ', durationSeconds: 5 }),
+  (error: unknown) => error instanceof MediaServiceError && error.code === 'INVALID_REQUEST',
+)
+
 const block = (kind: StoryBlock['kind'], data: StoryBlock['data'] = {}, text = ''): StoryBlock => ({ id: `${kind}-${Math.random()}`, kind, text, data })
 assert.equal(chooseStoryAudioCue([block('change', { stat: 'coin', delta: 6 })]), 'coinGain')
 assert.equal(chooseStoryAudioCue([block('change', { stat: 'coin', delta: -3 })]), 'coinSpend')
@@ -40,4 +69,4 @@ assert.equal(chooseStoryAudioCue([block('check', { outcome: 'success' })]), 'suc
 assert.equal(chooseStoryAudioCue([block('check', { outcome: 'failure' })]), 'failure')
 assert.equal(chooseStoryAudioCue([block('narration')]), null)
 
-console.log('audio synth contract passed')
+console.log('hybrid audio contract passed')

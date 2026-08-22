@@ -44,6 +44,11 @@ assert.deepEqual(lettersFromAfar.initialMap.map((node) => node.id), lettersFromA
 assert.deepEqual(lettersFromAfar.characters.map((entry) => entry.id), lettersFromAfarEn.characters.map((entry) => entry.id), 'character IDs remain identical across locales')
 assert.equal(new Set(lettersFromAfar.initialMap.map((node) => node.id)).size, 24, 'map has no duplicate IDs')
 assert.equal(new Set(lettersFromAfar.characters.map((entry) => entry.id)).size, 10, 'cast has no duplicate IDs')
+assert.ok(lettersFromAfar.audioTheme.recorded?.music?.src, 'the world has a durable generated music bed')
+assert.ok(lettersFromAfar.audioTheme.recorded?.cues?.travel?.src, 'arrivals use the reviewed generated route cue')
+lettersFromAfar.initialMap.forEach((node) => {
+  assert.ok(lettersFromAfar.audioTheme.recorded?.ambienceByLocationId?.[node.id]?.src, `map node ${node.id} has an authored regional ambience`)
+})
 
 let rail = replay(lettersFromAfar, ['邮戳', '盐沼旧堤', '投信箱', '核对最近三次退潮', '旧公路旅舍', '莉娜'])
 rail = act(rail, lettersFromAfar, choice(rail, '签收记录'))
