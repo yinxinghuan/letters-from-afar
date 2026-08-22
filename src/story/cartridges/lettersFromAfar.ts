@@ -7,6 +7,7 @@ import type {
   MapNode,
   StoryCartridge,
 } from '../types'
+import { lettersExpansionCast, lettersExpansionMap, lettersExpansionTurns } from './lettersFromAfarExpansion'
 
 const coverImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
 const entryImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
@@ -68,6 +69,7 @@ function cast(locale: Locale): CharacterDefinition[] {
       },
       skills: [{ id: 'repair', label: s(locale, '修船', 'Boat repair'), value: 4 }],
     },
+    ...lettersExpansionCast(locale),
   ]
 }
 
@@ -77,9 +79,10 @@ function map(locale: Locale): MapNode[] {
     { id: 'drift-harbor', label: s(locale, '漂港', 'Drift Harbor'), connectedTo: 'old-post-office', visited: true, detail: s(locale, '重新开门的海边小镇，路标仍被风吹歪。', 'A seaside town reopening while its road signs still lean from the storm.'), capabilities: ['rest', 'work', 'supplies'] },
     { id: 'saltmarsh-causeway', label: s(locale, '盐沼旧堤', 'Saltmarsh Causeway'), connectedTo: 'old-post-office', detail: s(locale, '退潮时露出的旧邮路，沿途有测路桩。', 'An old postal road exposed at low tide, marked by survey stakes.'), capabilities: ['rest'], routeHints: [s(locale, '废弃潮棚', 'abandoned tide shelter')] },
     { id: 'north-ferry', label: s(locale, '北渡口', 'North Ferry'), connectedTo: 'drift-harbor', detail: s(locale, '停航中的浅水渡口，修船棚仍有人工作。', 'A suspended shallow-water ferry where someone still works in the repair shed.'), capabilities: ['rest', 'work'], routeHints: [s(locale, '候船室', 'waiting room')] },
-    { id: 'old-highway-lodge', label: s(locale, '旧公路旅舍', 'Old Highway Lodge'), connectedTo: 'drift-harbor', detail: s(locale, '通向内陆前最后一个有热水的屋顶。', 'The last roof with hot water before the inland roads.'), capabilities: ['rest', 'supplies'] },
+    { id: 'old-highway-lodge', label: s(locale, '旧公路旅舍', 'Old Highway Lodge'), connectedTo: 'saltmarsh-causeway', detail: s(locale, '通向内陆前最后一个有热水的屋顶。', 'The last roof with hot water before the inland roads.'), capabilities: ['rest', 'supplies'] },
     { id: 'longwind-gate', label: s(locale, '长风草原入口', 'Longwind Grassland Gate'), connectedTo: 'old-highway-lodge', detail: s(locale, '草浪后的大陆公路入口。', 'The inland road opening beyond long fields of wind-bent grass.') },
     { id: 'cedar-lake-gate', label: s(locale, '湖林地带入口', 'Cedar Lakewood Gate'), connectedTo: 'north-ferry', detail: s(locale, '越过北岸后进入湖林的旧木道。', 'The old timber road entering the lakewoods beyond the north shore.') },
+    ...lettersExpansionMap(locale),
   ]
 }
 
@@ -216,6 +219,7 @@ function routeTurns(locale: Locale): DeterministicChoiceTurn[] {
     ...routeActions.map((action) => ({ action, when: { locations: [s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office')] }, turn: { match: [action], content: salt, imageSubject: 'environment' as const, imagePrompt: 'OBSERVER WIDE SHOT of one adult traveler crossing an old saltmarsh causeway at low tide, ochre-coated adult route surveyor emerging from sea mist ahead, third survey stake and dry rope visible, windswept cinematic editorial gouache, no readable text, no UI, 4:3' } })),
     ...ferryActions.map((action) => ({ action, when: { locations: [s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office')] }, turn: { match: [action], content: ferry, imageSubject: 'others' as const, imageCharacterId: 'eli-rook', imagePrompt: 'OBSERVER MEDIUM-WIDE SHOT inside a coastal ferry repair shed, adult mechanic Eli Rook beside a shallow-draft boat on rails, close-shaved head, silver hoop left ear, faded blue coat and rust-red scarf, adult traveler small and secondary, cinematic editorial gouache, no readable text, no UI, 4:3' } })),
     ...followups,
+    ...lettersExpansionTurns(locale),
   ]
 }
 

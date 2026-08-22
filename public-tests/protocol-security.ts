@@ -1,11 +1,11 @@
-import { listCartridges } from '../src/story/cartridges/index'
+import { wanderlightEn } from '../src/story/cartridges/wanderlight'
 import { applyParsedScene, createInitialSave } from '../src/story/engine/reducer'
 import { isStoryProtocolResidue, parseStoryProtocol } from '../src/story/engine/protocol'
 
 function ok(value: unknown, message: string): asserts value { if (!value) throw new Error(message) }
 function equal(actual: unknown, expected: unknown, message: string) { if (actual !== expected) throw new Error(`${message}: ${String(actual)} !== ${String(expected)}`) }
 
-const cartridge = listCartridges('en')[0]
+const cartridge = wanderlightEn
 const initial = createInitialSave(cartridge)
 const energyBefore = initial.stats.energy
 

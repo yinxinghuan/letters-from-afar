@@ -9,7 +9,8 @@
 
 ## 2. 目录结构
 
-- `src/story/cartridges/lettersFromAfar.ts`：中英文世界卡、开场、两条首发路线、人物、地图、数值与确定性回合。
+- `src/story/cartridges/lettersFromAfar.ts`：中英文世界卡、开场、两条首发路线、基础人物、基础地图、数值与确定性回合。
+- `src/story/cartridges/lettersFromAfarExpansion.ts`：第一批草原与湖林扩展；集中维护新增地点、未来角色及两条区域门的确定性回合。
 - `src/story/engine/`：协议解析、状态 reducer、选项一致性、地点绑定、危险、休息、工资和消费规则。
 - `src/story/useStoryEngine.ts`：个人存档、场景生成、行动管线与共享回执写入入口。
 - `src/shared-world/engine.ts`：可在 Node 中测试的共享世界纯规则。
@@ -18,7 +19,7 @@
 - `src/shared-world/receipt.ts`：把接力信 add/remove 回执幂等写入私人 StorySave。
 - `worker/index.js`：生产共享世界 Durable Object、动作幂等缓存、版本冲突和回执表。
 - `_design/`：首五分钟、路线与长期 200×80 回合推演。
-- `_qa/`：真实故事管线、共享规则和 Worker 规则测试。
+- `_qa/`：真实故事管线、世界扩展、共享规则和 Worker 规则测试；`world-expansion.ts` 逐步重放草原门与湖林门，并校验人物登场、地点和选项依据；`run-regression.mjs` 让 `npm test` 顺序执行 26 组母引擎与本游戏验收，任一组失败即停止。
 
 ## 3. 核心模块
 
@@ -40,7 +41,7 @@
 
 ## 4. 扩展点
 
-- 加地区、固定地点、人物或首发事件：修改 `lettersFromAfar.ts`，同时更新 `doc/world-bible.md` 与容量测试。
+- 加基础开场或首发事件：修改 `lettersFromAfar.ts`。继续扩展地区、固定地点与未来角色时优先修改 `lettersFromAfarExpansion.ts`，并同步 `doc/world-bible.md`、`_qa/world-expansion.ts` 与容量测试。
 - 调整精力、旅费、信迹或休息/工作/购买：修改 cartridge 的 `statDefinitions` 与 `domainRules`，并补 `_qa/vertical-slice.ts`。
 - 加共享动作或公共实体：同时修改 `src/shared-world/types.ts`、纯规则 `engine.ts`、`worker/index.js`、网关与 Worker 测试；禁止只改前端。
 - 改私人接力物品：修改 `src/shared-world/receipt.ts`，保持“私人存档成功后再 ack”顺序。

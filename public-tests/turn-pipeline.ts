@@ -1,10 +1,10 @@
 import { strict as assert } from 'node:assert'
-import { listCartridges } from '../src/story/cartridges/index'
+import { wanderlight, wanderlightEn } from '../src/story/cartridges/wanderlight'
 import { applyParsedScene, createInitialSave } from '../src/story/engine/reducer'
 import { parseStoryProtocol } from '../src/story/engine/protocol'
 import { prepareTurnCandidate } from '../src/story/engine/turnPipeline'
 
-const cartridge = listCartridges('zh')[0]
+const cartridge = wanderlight
 const save = createInitialSave(cartridge)
 
 const inquiry = prepareTurnCandidate({
@@ -81,7 +81,7 @@ assert.deepEqual(movedReplyless.choices.map((choice) => choice.label), [save.obj
 
 let continuityRuns = 0
 for (const locale of ['zh', 'en'] as const) {
-  const localizedCartridge = listCartridges(locale)[0]
+  const localizedCartridge = locale === 'zh' ? wanderlight : wanderlightEn
   const localizedSave = createInitialSave(localizedCartridge)
   for (const selected of localizedSave.choices) {
     const single = { ...localizedSave, choices: [{ ...selected }] }

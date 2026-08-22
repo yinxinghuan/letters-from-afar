@@ -1,4 +1,4 @@
-import { listCartridges } from '../src/story/cartridges/index'
+import { wanderlight } from '../src/story/cartridges/wanderlight'
 import { resolveDomainAction, statFloorChoices } from '../src/story/engine/domainRules'
 import { applyParsedScene, createInitialSave } from '../src/story/engine/reducer'
 import { parseStoryProtocol } from '../src/story/engine/protocol'
@@ -6,7 +6,7 @@ import { parseStoryProtocol } from '../src/story/engine/protocol'
 function ok(value: unknown, message: string): asserts value { if (!value) throw new Error(message) }
 function equal(actual: unknown, expected: unknown, message: string) { if (actual !== expected) throw new Error(`${message}: ${String(actual)} !== ${String(expected)}`) }
 
-const cartridge = listCartridges('zh')[0]
+const cartridge = wanderlight
 const exhausted = createInitialSave(cartridge)
 exhausted.stats.energy = 0
 

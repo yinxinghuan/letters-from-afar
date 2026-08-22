@@ -1,4 +1,4 @@
-import { listCartridges } from '../src/story/cartridges/index'
+import { wanderlight } from '../src/story/cartridges/wanderlight'
 import { parseStoryProtocol } from '../src/story/engine/protocol'
 import { applyParsedScene, createInitialSave } from '../src/story/engine/reducer'
 
@@ -6,7 +6,7 @@ function ok(value: unknown, message: string): asserts value { if (!value) throw 
 function equal(actual: unknown, expected: unknown, message: string) { if (actual !== expected) throw new Error(`${message}: ${String(actual)} !== ${String(expected)}`) }
 function latestImage(save: ReturnType<typeof createInitialSave>) { return [...save.blocks].reverse().find((block) => block.kind === 'image') }
 
-const cartridge = listCartridges('zh')[0]
+const cartridge = wanderlight
 const initial = createInitialSave(cartridge)
 const introduced = applyParsedScene(initial, parseStoryProtocol(`月台边，一个短发成年女人正把发光种荚扫回木箱。货签上写着“媛夕”；媛夕扣好箱盖，表示愿意说明这些种子的来历。
 [character_update: character_id="mira-voss" character="媛夕" role="28 岁 · 地方植物研究员"]

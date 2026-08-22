@@ -1,4 +1,4 @@
-import { listCartridges } from '../src/story/cartridges/index'
+import { wanderlight, wanderlightEn } from '../src/story/cartridges/wanderlight'
 import { actionAuthorizesCoinSpend, canonicalizePaymentMetadata, repairKnownPaymentGap, repairKnownUnauthorizedLodgingPayment, repairUnsettledContractPayment, validatePaymentConsistency } from '../src/story/engine/paymentConsistency'
 import { parseStoryProtocol } from '../src/story/engine/protocol'
 import { applyParsedScene, createInitialSave } from '../src/story/engine/reducer'
@@ -6,9 +6,9 @@ import { applyParsedScene, createInitialSave } from '../src/story/engine/reducer
 function ok(value: unknown, message: string): asserts value { if (!value) throw new Error(message) }
 function equal(actual: unknown, expected: unknown, message: string) { if (actual !== expected) throw new Error(`${message}: ${String(actual)} !== ${String(expected)}`) }
 
-const cartridge = listCartridges('zh')[0]
+const cartridge = wanderlight
 const initial = createInitialSave(cartridge)
-const englishCartridge = listCartridges('en')[0]
+const englishCartridge = wanderlightEn
 const englishInitial = createInitialSave(englishCartridge)
 const englishOffer = parseStoryProtocol('The supervisor says the completed packing work will pay you 8 coins.\n[job: action="offer" id="english-crates" label="Pack three cases" employer="Supervisor" wage="8"]', 'en')
 equal(validatePaymentConsistency(englishInitial, englishOffer, englishCartridge).length, 0, 'English future-tense wage offer must remain a promise, not a completed receipt')

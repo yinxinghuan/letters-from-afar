@@ -1,4 +1,4 @@
-import { listCartridges } from '../src/story/cartridges/index'
+import { wanderlight, wanderlightEn } from '../src/story/cartridges/wanderlight'
 import { decodeChoiceRecord, encodeChoiceRecord } from '../src/story/engine/choiceInput'
 import { parseStoryProtocol } from '../src/story/engine/protocol'
 import { applyConsistencyRecovery, applyConsistencyRecoverySelection, applyDisplayedRouteFallback, applyParsedScene, createImageBlock, createInitialSave, repairLegacyConsistencyRecovery, resolveConsistencyRecoverySelection, restoreDeterministicRecoveryChoice } from '../src/story/engine/reducer'
@@ -18,7 +18,7 @@ function createLoopChoices(scene: number, first: string, second: string) {
   ]
 }
 
-const cartridge = listCartridges('zh')[0]
+const cartridge = wanderlight
 const initial = createInitialSave(cartridge)
 const screenshotDraft = `你可以感受到她话语中的紧张和责任感，这让你对今晚的任务有了更深的认识。
 
@@ -247,7 +247,7 @@ const discussionOnly = canonicalizeTurnMetadata(carriageSave, parseStoryProtocol
 [choices: "继续询问田野工作的要求"]`, 'zh'), cartridge)
 ok(!discussionOnly.parsed.commands.some((command) => command.type === 'map_update'), 'merely discussing a remote field does not teleport the player')
 
-const enCartridge = listCartridges('en')[0]
+const enCartridge = wanderlightEn
 const enInitial = createInitialSave(enCartridge)
 const enCarriage = enCartridge.initialMap.find((node) => node.id === 'moonline-carriage')!
 const enCarriageSave = {
@@ -289,7 +289,7 @@ const replyless = applyParsedScene(initial, replylessParsed, cartridge, '只问�
 ok(replyless.choices.length >= 1, 'a replyless local detour retains prior grounded actions instead of entering a synthetic recovery')
 ok(!replyless.blocks.some((block) => block.id.startsWith('consistency-recovery-')), 'replyless commit never writes a consistency-recovery story block')
 
-for (const openingCartridge of [listCartridges('zh')[0], listCartridges('en')[0]]) {
+for (const openingCartridge of [wanderlight, wanderlightEn]) {
   const openingSave = createInitialSave(openingCartridge)
   for (const choice of openingSave.choices) {
     const authored = resolveDeterministicOpeningTurn(openingSave, openingCartridge, choice.label)
