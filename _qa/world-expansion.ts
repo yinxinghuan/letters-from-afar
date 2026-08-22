@@ -30,7 +30,7 @@ function choice(save: Save, fragment: string): string {
 }
 
 const initial = createInitialSave(lettersFromAfar)
-assert.equal(initial.map.length, 15, 'first expansion exposes fifteen stable authored map nodes')
+assert.equal(initial.map.length, 24, 'the current world exposes twenty-four stable authored map nodes')
 assert.equal(initial.characters.length, 1, 'all future expansion characters remain hidden before visible debut')
 assert.deepEqual(lettersFromAfar.initialMap.map((node) => node.id), lettersFromAfarEn.initialMap.map((node) => node.id), 'Chinese and English map IDs remain identical')
 assert.deepEqual(lettersFromAfar.characters.map((entry) => entry.id), lettersFromAfarEn.characters.map((entry) => entry.id), 'Chinese and English character IDs remain identical')
@@ -60,4 +60,4 @@ lake = act(lake, choice(lake, '未署名的旧信'))
 assert.equal(lake.location, '湖上驿站')
 assert.ok(lake.choices.length === 3 && lake.choices.every((entry) => /安雅|回信|随身铅封/.test(entry.label)), `Floating Post choices continue the visible reply investigation; got: ${lake.choices.map((entry) => entry.label).join(' / ')}`)
 
-console.log('Letters from Afar expansion: 15 map nodes, 6 stable characters, grassland gate and lakewood gate passed.')
+console.log('Letters from Afar first expansion gates: current 24-node world, grassland and lakewood chains passed.')

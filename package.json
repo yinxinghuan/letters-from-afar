@@ -27,6 +27,7 @@
     "test:choice-quality": "tsx public-tests/recommended-choice-quality.ts",
     "test:multiturn": "tsx public-tests/multiturn-scenario-matrix.ts",
     "test:world-expansion": "tsx _qa/world-expansion.ts",
+    "test:world-expansion-inland": "tsx _qa/world-expansion-inland.ts",
     "test:preset-events": "tsx public-tests/preset-events.ts",
     "test:image-director": "tsx public-tests/image-director.ts",
     "test:resume": "tsx public-tests/reading-anchor.ts",
@@ -37,7 +38,7 @@
     "test:danger": "tsx public-tests/danger-director.ts",
     "test:danger-loop": "tsx public-tests/danger-loop.ts",
     "test:loop-escape": "tsx public-tests/loop-escape.ts",
-    "test:slice": "tsx _qa/vertical-slice.ts && tsx _qa/world-expansion.ts && tsx _qa/shared-world.ts && node _qa/worker-rules.mjs && node _design/first-five-minutes.mjs && node _design/route-simulator.mjs && node _design/campaign-simulator.mjs"
+    "test:slice": "tsx _qa/vertical-slice.ts && tsx _qa/world-expansion.ts && tsx _qa/world-expansion-inland.ts && tsx _qa/shared-world.ts && node _qa/worker-rules.mjs && node _design/first-five-minutes.mjs && node _design/route-simulator.mjs && node _design/campaign-simulator.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

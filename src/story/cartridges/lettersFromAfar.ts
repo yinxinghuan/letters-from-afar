@@ -8,6 +8,7 @@ import type {
   StoryCartridge,
 } from '../types'
 import { lettersExpansionCast, lettersExpansionMap, lettersExpansionTurns } from './lettersFromAfarExpansion'
+import { lettersInlandCast, lettersInlandMap, lettersInlandTurns } from './lettersFromAfarInlandExpansion'
 
 const coverImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
 const entryImage = new URL('../img/worlds/letters-from-afar-entry-v2.png', import.meta.url).href
@@ -70,6 +71,7 @@ function cast(locale: Locale): CharacterDefinition[] {
       skills: [{ id: 'repair', label: s(locale, '修船', 'Boat repair'), value: 4 }],
     },
     ...lettersExpansionCast(locale),
+    ...lettersInlandCast(locale),
   ]
 }
 
@@ -83,6 +85,7 @@ function map(locale: Locale): MapNode[] {
     { id: 'longwind-gate', label: s(locale, '长风草原入口', 'Longwind Grassland Gate'), connectedTo: 'old-highway-lodge', detail: s(locale, '草浪后的大陆公路入口。', 'The inland road opening beyond long fields of wind-bent grass.') },
     { id: 'cedar-lake-gate', label: s(locale, '湖林地带入口', 'Cedar Lakewood Gate'), connectedTo: 'north-ferry', detail: s(locale, '越过北岸后进入湖林的旧木道。', 'The old timber road entering the lakewoods beyond the north shore.') },
     ...lettersExpansionMap(locale),
+    ...lettersInlandMap(locale),
   ]
 }
 
@@ -101,7 +104,7 @@ function openingTurns(locale: Locale): Record<string, DemoTurn> {
       match: [s(locale, '让艾达说清她为何害怕这封信', 'Ask Ada why the letter frightens her')],
       content: zh
         ? `艾达没有碰信。她先摘下腰间的铜钥匙，打开墙边档案柜，里面本该放着潮汐旧戳的位置只剩一圈干净的灰。\n\n[艾达·维尔] [main] [压低声音]: “昨晚我亲手锁的。三年前，最后一批走这条邮路的人都没有等到回信。你若真要查，我会把每次来信的时间记下来；但你也答应我，发现第一处能寄信的地方就报平安。”\n\n你们约定：艾达替你保管所有来信记录，你在第一处旧邮站留下报平安的回执。她随后摊开路线图：盐沼旧堤步行约二十分钟，涨潮前可过并有旧邮棚；北渡口约三十五分钟，渡船停航，但修船棚今夜收过一袋旧信。\n\n[reputation: npc="艾达·维尔" action="made-a-visible-promise"]\n[state: value="在第一处旧邮站给艾达留下平安回执"]\n[choices: "前往盐沼旧堤，寻找旧邮站"|"去北渡口问今夜是否有人投递"|"先帮艾达清点档案柜，确认少了什么"]`
-        : `Ada does not touch the letter. She removes a brass key from her belt and opens the archive cabinet. Where the retired Tide Route stamp should be, only a clean circle remains in the dust.\n\n[Ada Vale] [main] [quietly]: “I locked it myself last night. Three years ago, the last people on that route never received their replies. If you investigate, I will log every letter that arrives—but promise me you will leave word at the first old post station you find.”\n\nYou agree: Ada will preserve the arrival record, and you will leave a safe-arrival receipt at the first old post station. She then opens the route map: Saltmarsh Causeway is about twenty minutes on foot and passable before high tide, with an old postal shelter. North Ferry is about thirty-five minutes away; sailings are suspended, but its repair shed received a sack of old mail tonight.\n\n[reputation: npc="Ada Vale" action="made-a-visible-promise"]\n[state: value="Leave Ada a safe-arrival receipt at the first old post station"]\n[choices: "Travel to Saltmarsh Causeway and find the old post station"|"Ask at North Ferry whether anyone delivered mail tonight"|"Help Ada audit the cabinet before leaving"]`,
+        : `Ada does not touch the letter. She removes a brass key from her belt and opens the archive cabinet. Where the retired Tide Route stamp should be, only a clean circle remains in the dust.\n\n[Ada Vale] [main] [quietly]: “I locked it myself last night. Three years ago, the last people on that route never received their replies. If you investigate, I will log every letter that arrives—but promise me you will leave word at the first old post station you find.”\n\nYou agree: Ada will preserve the arrival record, and you will leave a safe-arrival receipt at the first old post station. She then opens the route map: Saltmarsh Causeway is about twenty minutes on foot and passable before high tide, with an old postal shelter. North Ferry is about thirty-five minutes away; sailings are suspended, but its repair shed received a sack of old mail tonight.\n\n[reputation: npc="Ada Vale" action="made-a-visible-promise"]\n[state: value="Leave Ada a safe-arrival receipt at the first old post station"]\n[choices: "Travel to Saltmarsh Causeway and find the old post station"|"Travel to North Ferry and ask whether anyone delivered mail tonight"|"Help Ada audit the cabinet before leaving"]`,
       imageSubject: 'others', imageCharacterId: 'ada-vale',
       imagePrompt: 'FIRST-PERSON conversation view toward Ada Vale opening an old archive cabinet, adult woman age 34, cropped dark auburn hair, pale scar through right eyebrow, grey-green eyes, slate postal coat, her expression controlled but visibly afraid, empty circular space in cabinet dust, player off-camera, cinematic editorial gouache, no readable text, no UI, 4:3',
     },
@@ -133,7 +136,7 @@ function routeTurns(locale: Locale): DeterministicChoiceTurn[] {
   ]
   const ferryActions = [
     s(locale, '去北渡口追查今夜靠岸的人', 'Go to North Ferry and ask who landed tonight'),
-    s(locale, '去北渡口问今夜是否有人投递', 'Ask at North Ferry whether anyone delivered mail tonight'),
+    s(locale, '去北渡口问今夜是否有人投递', 'Travel to North Ferry and ask whether anyone delivered mail tonight'),
     s(locale, '前往北渡口，确认另一条离港路线', 'Travel to North Ferry and check the second route'),
   ]
   const followups: DeterministicChoiceTurn[] = [
@@ -220,6 +223,7 @@ function routeTurns(locale: Locale): DeterministicChoiceTurn[] {
     ...ferryActions.map((action) => ({ action, when: { locations: [s(locale, '漂港·旧邮局', 'Drift Harbor · Old Post Office')] }, turn: { match: [action], content: ferry, imageSubject: 'others' as const, imageCharacterId: 'eli-rook', imagePrompt: 'OBSERVER MEDIUM-WIDE SHOT inside a coastal ferry repair shed, adult mechanic Eli Rook beside a shallow-draft boat on rails, close-shaved head, silver hoop left ear, faded blue coat and rust-red scarf, adult traveler small and secondary, cinematic editorial gouache, no readable text, no UI, 4:3' } })),
     ...followups,
     ...lettersExpansionTurns(locale),
+    ...lettersInlandTurns(locale),
   ]
 }
 
