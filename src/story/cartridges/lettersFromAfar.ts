@@ -313,7 +313,7 @@ function make(locale: Locale): StoryCartridge {
     theme: { outer: '#101719', surface: '#182629', paper: '#E8E1CF', ink: '#263335', muted: '#74817C', accent: '#397F78', danger: '#B85F53', gold: '#C49358', material: 'wayfarer' },
     audioTheme: {
       material: 'wayfarer', bpm: 64, rootHz: 146.83, scale: [0, 2, 5, 7, 9],
-      levels: { music: 0.04, ambient: 0.12, sfx: 0.10, master: 0.72 },
+      levels: { music: 0.04, ambient: 0.12, sfx: 0.045, master: 0.72 },
       tension: [{ statId: 'energy', direction: 'low', weight: 0.45 }, { statId: 'coin', direction: 'low', weight: 0.2 }, { statId: 'clues', direction: 'low', weight: 0.35 }],
       recorded: {
         music: { src: roadThemeUrl, gain: 0.22 },
@@ -344,7 +344,7 @@ function make(locale: Locale): StoryCartridge {
           'meridian-observatory': { src: plateauAmbienceUrl, gain: 0.34 },
         },
         cues: {
-          travel: { src: routeArrivalUrl, gain: 0.28, role: 'effect' },
+          travel: { src: routeArrivalUrl, gain: 0.12, role: 'effect' },
           discovery: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
           relationship: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },
           summary: { src: featureThemeUrl, gain: 0.18, role: 'feature', cooldownMs: 180_000 },

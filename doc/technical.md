@@ -48,7 +48,7 @@
 
 ### 混合声音系统
 
-cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`relationship / summary` 可触发关键段落 B，其余低频短反馈仍由 Web Audio 合成。本作在引擎阅读模式衰减之外，再把合成反馈降到 `sfx: 0.10`、路线抵达录音降到 `gain: 0.28`；音乐和环境层保持不变。
+cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密度阅读底乐 A，`ambienceByLocationId` 用稳定地点 ID 选择四种地域环境层；`cues.travel` 是短事件音效，`relationship / summary` 可触发关键段落 B，其余低频短反馈仍由 Web Audio 合成。本作在引擎阅读模式衰减之外，再把合成反馈降到 `sfx: 0.045`、路线抵达录音降到 `gain: 0.12`；音乐和环境层保持不变。
 
 录制音乐和环境声不设置 `loop=true`：A 自然结束后至少等待 30 秒，环境声等待 7 秒再播放。B 播放时暂停 A、结束后恢复 A，同源 B 至少冷却 180 秒；切换静音、页面隐藏和组件卸载都会清理 B，恢复时不补播。播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。
 
