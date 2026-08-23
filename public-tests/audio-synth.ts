@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { chooseStoryAudioCue } from '../src/story/audio/cueDirector'
 import { generateAudioMedia, MediaServiceError } from '../src/shared/runtime/media'
-import { createAmbientTexture, RECORDED_SOUND_PROFILE, resolveRecordedAmbience, SFX_OUTPUT_PROFILE, SYNTH_AMBIENT_PROFILE } from '../src/story/audio/StorySynth'
+import { createAmbientTexture, RECORDED_SOUND_PROFILE, resolveRecordedAmbience, shouldReplayRecordedBed, SFX_OUTPUT_PROFILE, StorySynth, SYNTH_AMBIENT_PROFILE } from '../src/story/audio/StorySynth'
 import type { StoryAudioTheme, StoryBlock } from '../src/story/types'
 
 function seededRandom(seed = 173): () => number {
@@ -36,17 +36,59 @@ const recordedTheme: StoryAudioTheme = {
   recorded: {
     music: { src: 'road-theme.mp3', gain: .22 },
     ambience: { src: 'road.mp3', gain: .3 },
-    ambienceByLocationId: { 'old-post-office': { src: 'coast.mp3', gain: .34 } },
+    ambienceByLocationId: { 'old-post-office': { src: 'coast.mp3', gain: .34, replay: 'once-per-visit' } },
     cues: { travel: { src: 'arrival.mp3', gain: .62 } },
   },
 }
 assert.equal(resolveRecordedAmbience(recordedTheme, 'old-post-office')?.src, 'coast.mp3')
+assert.equal(resolveRecordedAmbience(recordedTheme, 'old-post-office')?.replay, 'once-per-visit')
 assert.equal(resolveRecordedAmbience(recordedTheme, 'unknown-place')?.src, 'road.mp3')
+assert.equal(shouldReplayRecordedBed('ambient', resolveRecordedAmbience(recordedTheme, 'old-post-office')!), false)
+assert.equal(shouldReplayRecordedBed('ambient', resolveRecordedAmbience(recordedTheme, 'unknown-place')!), true)
+assert.equal(shouldReplayRecordedBed('music', { src: 'theme.mp3', gain: .2, replay: 'once-per-visit' }), true)
 assert.equal(RECORDED_SOUND_PROFILE.maxCueVoices, 2)
 assert.ok(SFX_OUTPUT_PROFILE.gainScale <= .52)
 assert.ok(SFX_OUTPUT_PROFILE.minimumCueIntervalSeconds >= .18)
 assert.ok(RECORDED_SOUND_PROFILE.musicRepeatDelayMs >= 5_000)
 assert.ok(RECORDED_SOUND_PROFILE.ambienceRepeatDelayMs >= 5_000)
+
+class FakeAudioElement {
+  preload = ''
+  currentTime = 0
+  volume = 1
+  playCount = 0
+  pauseCount = 0
+  onended: (() => void) | null = null
+  onerror: (() => void) | null = null
+  constructor(public readonly src: string) {}
+  play(): Promise<void> { this.playCount += 1; return Promise.resolve() }
+  pause(): void { this.pauseCount += 1 }
+}
+
+Object.assign(globalThis, {
+  window: { setTimeout, clearTimeout },
+  document: { hidden: false },
+  Audio: FakeAudioElement,
+})
+const visitSynth = new StorySynth() as unknown as {
+  theme: StoryAudioTheme
+  unlocked: boolean
+  recordedAmbience: FakeAudioElement
+  syncRecordedAmbience: (track: NonNullable<StoryAudioTheme['recorded']>['ambience'], restartVisit?: boolean) => void
+  resumeRecordedBeds: () => void
+}
+visitSynth.theme = recordedTheme
+visitSynth.unlocked = true
+const oneVisitTrack = resolveRecordedAmbience(recordedTheme, 'old-post-office')!
+visitSynth.syncRecordedAmbience(oneVisitTrack)
+await Promise.resolve()
+assert.equal(visitSynth.recordedAmbience.playCount, 1, 'ambience starts once on location entry')
+visitSynth.recordedAmbience.onended?.()
+visitSynth.resumeRecordedBeds()
+assert.equal(visitSynth.recordedAmbience.playCount, 1, 'completed ambience stays silent on resume during the same visit')
+visitSynth.syncRecordedAmbience(oneVisitTrack, true)
+await Promise.resolve()
+assert.equal(visitSynth.recordedAmbience.playCount, 2, 'entering a new location visit permits one fresh ambience play')
 await assert.rejects(
   () => generateAudioMedia({ sessionId: 'test-session', kind: 'sfx', prompt: 'test', durationSeconds: 0.25 }),
   (error: unknown) => error instanceof MediaServiceError && error.code === 'INVALID_REQUEST',

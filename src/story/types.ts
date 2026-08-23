@@ -28,6 +28,9 @@ export interface StoryRecordedTrack {
   gain: number
   role?: 'effect' | 'feature'
   cooldownMs?: number
+  /** `once-per-visit` plays an ambience track once after entering a location,
+   * then leaves intentional silence until the player changes location. */
+  replay?: 'spaced' | 'once-per-visit'
 }
 
 export interface StoryRecordedAudio {

@@ -6,6 +6,7 @@ import type {
   Locale,
   MapNode,
   StoryCartridge,
+  StoryRecordedTrack,
 } from '../types'
 import { lettersExpansionCast, lettersExpansionMap, lettersExpansionTurns } from './lettersFromAfarExpansion'
 import { lettersInlandCast, lettersInlandMap, lettersInlandTurns } from './lettersFromAfarInlandExpansion'
@@ -19,6 +20,12 @@ const openRoadAmbienceUrl = new URL('../audio/assets/ambience-open-road.mp3', im
 const railAmbienceUrl = new URL('../audio/assets/ambience-rail.mp3', import.meta.url).href
 const plateauAmbienceUrl = new URL('../audio/assets/ambience-plateau.mp3', import.meta.url).href
 const routeArrivalUrl = new URL('../audio/assets/sfx-route-arrival.mp3', import.meta.url).href
+
+const placeAmbience = (src: string): StoryRecordedTrack => ({
+  src,
+  gain: 0.34,
+  replay: 'once-per-visit',
+})
 
 const s = (locale: Locale, zh: string, en: string) => locale === 'zh' ? zh : en
 
@@ -318,30 +325,30 @@ function make(locale: Locale): StoryCartridge {
       recorded: {
         music: { src: roadThemeUrl, gain: 0.22 },
         ambienceByLocationId: {
-          'drift-harbor': { src: coastAmbienceUrl, gain: 0.34 },
-          'old-post-office': { src: coastAmbienceUrl, gain: 0.34 },
-          'saltmarsh-causeway': { src: coastAmbienceUrl, gain: 0.34 },
-          'north-ferry': { src: coastAmbienceUrl, gain: 0.34 },
-          'beacon-yard': { src: coastAmbienceUrl, gain: 0.34 },
-          'longwind-gate': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'crosswind-farm': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'migrant-market': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'old-highway-lodge': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'whitebird-marsh': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'cedar-lake-gate': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'cedar-lake': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'floating-post': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'moss-bridge': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'glasshouse-clinic': { src: openRoadAmbienceUrl, gain: 0.34 },
-          'platform-city': { src: railAmbienceUrl, gain: 0.34 },
-          'roundhouse': { src: railAmbienceUrl, gain: 0.34 },
-          'copper-ridge': { src: railAmbienceUrl, gain: 0.34 },
-          'buried-branch': { src: railAmbienceUrl, gain: 0.34 },
-          'south-freight-yard': { src: railAmbienceUrl, gain: 0.34 },
-          'echo-canyon-road': { src: plateauAmbienceUrl, gain: 0.34 },
-          'rockhouse': { src: plateauAmbienceUrl, gain: 0.34 },
-          'dryriver-station': { src: plateauAmbienceUrl, gain: 0.34 },
-          'meridian-observatory': { src: plateauAmbienceUrl, gain: 0.34 },
+          'drift-harbor': placeAmbience(coastAmbienceUrl),
+          'old-post-office': placeAmbience(coastAmbienceUrl),
+          'saltmarsh-causeway': placeAmbience(coastAmbienceUrl),
+          'north-ferry': placeAmbience(coastAmbienceUrl),
+          'beacon-yard': placeAmbience(coastAmbienceUrl),
+          'longwind-gate': placeAmbience(openRoadAmbienceUrl),
+          'crosswind-farm': placeAmbience(openRoadAmbienceUrl),
+          'migrant-market': placeAmbience(openRoadAmbienceUrl),
+          'old-highway-lodge': placeAmbience(openRoadAmbienceUrl),
+          'whitebird-marsh': placeAmbience(openRoadAmbienceUrl),
+          'cedar-lake-gate': placeAmbience(openRoadAmbienceUrl),
+          'cedar-lake': placeAmbience(openRoadAmbienceUrl),
+          'floating-post': placeAmbience(openRoadAmbienceUrl),
+          'moss-bridge': placeAmbience(openRoadAmbienceUrl),
+          'glasshouse-clinic': placeAmbience(openRoadAmbienceUrl),
+          'platform-city': placeAmbience(railAmbienceUrl),
+          'roundhouse': placeAmbience(railAmbienceUrl),
+          'copper-ridge': placeAmbience(railAmbienceUrl),
+          'buried-branch': placeAmbience(railAmbienceUrl),
+          'south-freight-yard': placeAmbience(railAmbienceUrl),
+          'echo-canyon-road': placeAmbience(plateauAmbienceUrl),
+          'rockhouse': placeAmbience(plateauAmbienceUrl),
+          'dryriver-station': placeAmbience(plateauAmbienceUrl),
+          'meridian-observatory': placeAmbience(plateauAmbienceUrl),
         },
         cues: {
           travel: { src: routeArrivalUrl, gain: 0.12, role: 'effect' },
