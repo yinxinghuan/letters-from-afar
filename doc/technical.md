@@ -12,7 +12,7 @@
 - `src/story/cartridges/lettersFromAfar.ts`：中英文世界卡、开场、两条首发路线、基础人物、基础地图、数值与确定性回合。
 - `src/story/cartridges/lettersFromAfarExpansion.ts`：第一批草原与湖林扩展；集中维护新增地点、未来角色及两条区域门的确定性回合。
 - `src/story/cartridges/lettersFromAfarInlandExpansion.ts`：第二批断轨盆地与赤土高原扩展；维护 4 名未来角色、9 个新增节点、两条区域链和终点后续调查。
-- `src/story/engine/`：协议解析、状态 reducer、选项一致性、地点绑定、危险、休息、工资和消费规则。
+- `src/story/engine/`：协议解析、状态 reducer、选项一致性、地点绑定、危险、休息、工资和消费规则；`executeTurn.ts` 是与 React/DOM/媒体/存储解耦的服务端回合权威边界。
 - `src/story/audio/StorySynth.ts`：混合声音导演；管理录制音乐/地域环境层/路线提示、精确合成反馈、解锁、静音、后台暂停、并发上限与播放失败降级。
 - `src/story/audio/assets/`：1 段低密度阅读底乐 A、1 段关键段落配乐 B、4 段地域环境层和 1 段路线抵达音效；全部作为 Vite 相对构建资产打包。
 - `src/story/audio/useStoryAudio.ts`：把权威地点和数值张力传给声音导演，并避免存档完成加载前预取错误地点的环境声。
@@ -31,6 +31,8 @@
 ### 个人叙事状态
 
 `useStoryEngine` 只通过 `commit()` 更新当前世界，并把完整 `StoryArchive` 写入 `useGameSave('letters-from-afar')`。确定性开场与首发路线先经过和 UI 相同的 `prepareTurnCandidate → applyParsedScene` 管线，避免测试绕过选项过滤、地点绑定或数值结算。
+
+`executeStoryTurn()` 抽出可由私人 Story Session Worker 调用的纯回合管线，并保留活跃危险 deflection、领域事务、作者回合、proposal 校验与 reducer 的原顺序；`_qa/server-turn-pipeline.ts` 验证模型旁路、原子提交、输入不变性和危险线程保护。它不接管 `/api/world/*`：共享 World Authority 必须先独立提交公共动作，再以已提交回执更新私人会话。当前仅为源码 canary，正式写入仍等待后端可验证的 AlterU 玩家身份。
 
 开场采用两级确定性披露：`opening` 首屏以三个可感知节拍交代玩家的临时邮路员身份、明早递送积压邮件的职责、今晚因封路留守的原因，以及写着玩家名字但没有投递记录的干信封；仍只提供两个贴近信封/投信口的动作。`openingTurns()` 第一次行动揭示未来日期，`routeTurns()` 中的档案柜/首行回合第二次才揭示盐沼路线与潮汐时限。`public-tests/opening-density.ts` 同时检查角色身份/行动动机、限制中英文首屏长度、提前出现的专有名词、首个行动段落数和后续选择数。
 
