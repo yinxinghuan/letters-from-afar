@@ -24,7 +24,7 @@
 - `src/shared-world/receipt.ts`：把接力信 add/remove 回执幂等写入私人 StorySave。
 - `worker/index.js`：生产共享世界 Durable Object、动作幂等缓存、版本冲突和回执表。
 - `_design/`：首五分钟、路线与长期 200×80 回合推演。
-- `_qa/`：真实故事管线、世界扩展、共享规则和 Worker 规则测试；`world-expansion.ts` 重放草原门与湖林门，`world-expansion-inland.ts` 以中英文重放断轨盆地与赤土高原并继续执行终点调查；两者校验人物登场、稳定 ID、地点和选项依据。`run-regression.mjs` 让 `npm test` 顺序执行 26 组母引擎与本游戏验收，任一组失败即停止。
+- `_qa/`：真实故事管线、世界扩展、共享规则和 Worker 规则测试；`world-expansion.ts` 重放草原门与湖林门，`world-expansion-inland.ts` 以中英文重放断轨盆地与赤土高原并继续执行终点调查；两者校验人物登场、稳定 ID、地点和选项依据。`run-regression.mjs` 让 `npm test` 顺序执行 27 组母引擎与本游戏验收，任一组失败即停止。
 
 ## 3. 核心模块
 
@@ -55,6 +55,8 @@ cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密
 录制音乐和环境声都不设置 `loop=true`。A 自然结束后至少等待 30 秒再进入；地域环境轨标记 `replay: 'once-per-visit'`，每次进入权威地点只完整播放一次，结束后保持安静，同一访问中的静音/页面恢复不会使它从头重播，只有离开并再次进入地点才重置。B 播放时暂停 A、结束后恢复 A，同源 B 至少冷却 180 秒；切换静音、页面隐藏和组件卸载都会清理 B，恢复时不补播。播放被浏览器拒绝时，音乐/环境/提示分别退回原合成实现。
 
 阅读音效有独立前景预算：普通选择只保留一次轻确认；普通正文、图片完成、精力与信迹变化静音，只有检定、旅费、稀有物、关系、危险、抵达与章节节点才产生结果提示。合成 SFX 乘 `0.52`，`180 ms` 内合并突发触发，合成瞬态声部上限为 6、录制短音效上限为 2。`public-tests/audio-synth.ts` 检查这些限制和语义选择，`_qa/world-expansion-inland.ts` 检查全部稳定地图节点都有环境声绑定。
+
+- 英文重复动作规范化同时处理 `Retry/Continue ...` 前缀与 `... again/once more` 后缀；与中文“再次/重新……”共用生成选项门禁，并由 `public-tests/recommended-choice-quality.ts` 锁回归。
 
 ## 4. 扩展点
 
