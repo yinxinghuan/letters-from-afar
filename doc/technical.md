@@ -32,7 +32,11 @@
 
 `useStoryEngine` 只通过 `commit()` 更新当前世界，并把完整 `StoryArchive` 写入 `useGameSave('letters-from-afar')`。确定性开场与首发路线先经过和 UI 相同的 `prepareTurnCandidate → applyParsedScene` 管线，避免测试绕过选项过滤、地点绑定或数值结算。
 
-`executeStoryTurn()` 抽出可由私人 Story Session Worker 调用的纯回合管线，并保留活跃危险 deflection、领域事务、作者回合、proposal 校验与 reducer 的原顺序；`_qa/server-turn-pipeline.ts` 验证模型旁路、原子提交、输入不变性和危险线程保护。它不接管 `/api/world/*`：共享 World Authority 必须先独立提交公共动作，再以已提交回执更新私人会话。当前仅为源码 canary，正式写入仍等待后端可验证的 AlterU 玩家身份。
+`executeStoryTurn()` 抽出可由私人 Story Session Worker 调用的纯回合管线，并保留活跃危险 deflection、领域事务、作者回合、proposal 校验与 reducer 的原顺序；`_qa/server-turn-pipeline.ts` 验证模型旁路、原子提交、输入不变性和危险线程保护。它不接管 `/api/world/*`：共享 World Authority 必须先独立提交公共动作，再以已提交回执更新私人会话。
+
+2026-09-04 本机 Story Session service/client canary 新增 `server/storySessionLab.ts`、`src/story/session/storySessionClient.ts` 与 `storySessionJournal.ts`。Lab 只绑定 loopback，以合成 bearer→owner 映射和 WAL SQLite 验证 enrollment/action 请求指纹幂等、短事务原子提交、双进程竞争、提交后丢响应与磁盘重开；浏览器 journal 在首次网络请求前保存 enrollment 或 pending envelope，未知结果先读 cursor/action id 再决定是否重放。owner-scoped 目录只回 session/ruleset/version/cursor/locale/scene/时间，restart 保留旧私人 session，switch 在 unresolved enrollment/action 时 fail closed。
+
+存量修复固定为 `letters-from-afar-save-v10-repair-2026-09-04`。普通 GET 保持只读；服务端从已存 snapshot 调用本作 `normalizeSave()`，拒绝客户端目标 snapshot，成功只增加私人 session version，不增加剧情 cursor/event。`sharedAuthorityProjection` 只比较 `shared-relay:*` 的 id/count 与 `relay-receipt-*` 的稳定回执字段：含公共回执标记的旧存档必须先通过注入的 World Authority enrollment validator；任何普通私人回合或私人迁移改变这些字段都会在事务前返回 `SHARED_AUTHORITY_REQUIRED`。Story Session lab 对 `/api/world/*` 返回 404，公共动作、grant receipt 与 ack 仍由既有 Worker 独立拥有。`_qa/story-session-shared-boundary.ts` 固定验证伪造/删除回执零写入、正常私人事务与修复保留回执，以及两套路由不混用。正式 `StoryShell/useStoryEngine`、公共 Worker、云存档、媒体、生产默认与部署均未改变；生产仍等待可验证身份、真实 receipt lookup、数据库迁移作业、备份/监控/回滚和 server-controlled cohort。
 
 开场采用两级确定性披露：`opening` 首屏以三个可感知节拍交代玩家的临时邮路员身份、明早递送积压邮件的职责、今晚因封路留守的原因，以及写着玩家名字但没有投递记录的干信封；仍只提供两个贴近信封/投信口的动作。`openingTurns()` 第一次行动揭示未来日期，`routeTurns()` 中的档案柜/首行回合第二次才揭示盐沼路线与潮汐时限。`public-tests/opening-density.ts` 同时检查角色身份/行动动机、限制中英文首屏长度、提前出现的专有名词、首个行动段落数和后续选择数。
 

@@ -40,7 +40,12 @@
     "test:danger-loop": "tsx public-tests/danger-loop.ts",
     "test:loop-escape": "tsx public-tests/loop-escape.ts",
     "test:server-turn": "node --import tsx _qa/server-turn-pipeline.ts",
-    "test:slice": "tsx _qa/vertical-slice.ts && tsx _qa/world-expansion.ts && tsx _qa/world-expansion-inland.ts && tsx _qa/shared-world.ts && node _qa/worker-rules.mjs && node _design/first-five-minutes.mjs && node _design/route-simulator.mjs && node _design/campaign-simulator.mjs"
+    "test:slice": "tsx _qa/vertical-slice.ts && tsx _qa/world-expansion.ts && tsx _qa/world-expansion-inland.ts && tsx _qa/shared-world.ts && node _qa/worker-rules.mjs && node _design/first-five-minutes.mjs && node _design/route-simulator.mjs && node _design/campaign-simulator.mjs",
+    "test:story-session-client": "node --import tsx _qa/story-session-client.ts",
+    "test:story-session-persistence": "node --import tsx _qa/story-session-persistence.ts",
+    "test:story-session-directory": "node --import tsx _qa/story-session-directory.ts",
+    "test:story-session-migration": "node --import tsx _qa/story-session-migration.ts",
+    "test:story-session-shared-boundary": "node --import tsx _qa/story-session-shared-boundary.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

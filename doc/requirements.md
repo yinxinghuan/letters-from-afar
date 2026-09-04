@@ -176,6 +176,14 @@
 - 7 个公共工程、21 类旅人痕迹、9 类接力信件目标。
 - 至少 6 种结局组合，由未来来信回应、同行关系、恢复道路、帮助失联者和是否保留白塔机制共同决定。
 
+### 3.11 Story Session 本机 canary
+
+- 正式入口仍使用既有 Aigram 个人存档、`game-chat` 适配器与独立 `/api/world/*` 公共 Worker；本机 Story Session canary 只使用 loopback SQLite、合成 QA 身份和固定生成器，不接正式玩家、真实模型或生产写入。
+- 旧私人存档以稳定 enrollment id 无损注册，客户端在第一次注册/行动请求之前保存原始 envelope；未知响应先按 previous cursor 与 action id 对账，确认未提交后才允许重放完全相同的请求。
+- 普通 `GET` 只读；持久化修复只接受固定白名单 migration id 与期望 session/ruleset version，由服务端运行本作 `normalizeSave()`。成功只增加私人 session version，不增加剧情 cursor/event，也不触碰公共世界 version/cursor。
+- `shared-relay:*` 行囊项与 `relay-receipt-*` 记录属于公共 World Authority 回执投影。含这些标记的旧存档只有在服务端校验回执后才允许 enrollment；普通私人回合和私人存档修复必须保持该投影不变，否则零写入返回 `SHARED_AUTHORITY_REQUIRED`。Story Session lab 不实现或代理 `/api/world/*`。
+- 同一 owner 的旧私人旅程保留在服务端，目录最多返回 50 条最小元数据，不包含正文、选择、事件、提示词、媒体 URL、公共世界快照或 owner。当前只完成 service/client 合同，React 历史旅程界面仍未接入。
+
 ## 4. Controls
 
 - 点击/轻触当前选项：提交一次行动并立即显示已接收反馈；网络重试不生成新的 action ID。
