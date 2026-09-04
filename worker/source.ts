@@ -3,7 +3,7 @@ import { aigramAdapter } from '../src/story/adapters/aigram'
 import { executeStoryTurn } from '../src/story/engine/executeTurn'
 import { normalizeSave } from '../src/story/useStoryEngine'
 import { applyRelayReceiptToSave } from '../src/shared-world/receipt'
-import { LettersWorld, handleApi as handleWorldApi } from './worldSource.js'
+import { LettersWorld, handleWorldApi } from './worldSource.js'
 import { createStorySessionRuntime } from './storySessionRuntime'
 
 const runtime = createStorySessionRuntime({

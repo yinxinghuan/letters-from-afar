@@ -196,7 +196,7 @@ export class LettersWorld extends DurableObject {
   }
 }
 
-export async function handleApi(request, env) {
+export async function handleWorldApi(request, env) {
   const url = new URL(request.url)
   if (request.method === 'GET' && url.pathname === '/api/health') return json({ ok: true, service: 'letters-from-afar', storage: 'durable-object-sqlite', identity_mode: env.LAB_MODE === 'true' ? 'unverified-staging' : env.PUBLIC_BETA === 'true' ? 'unverified-production-beta' : 'writes-disabled' })
   if (!url.pathname.startsWith('/api/world/')) return new Response('Not Found', { status: 404 })

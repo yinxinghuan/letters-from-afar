@@ -7553,7 +7553,7 @@ var LettersWorld = class extends DurableObject {
     return new Response("Not Found", { status: 404 });
   }
 };
-async function handleApi(request, env) {
+async function handleWorldApi(request, env) {
   const url = new URL(request.url);
   if (request.method === "GET" && url.pathname === "/api/health") return json({ ok: true, service: "letters-from-afar", storage: "durable-object-sqlite", identity_mode: env.LAB_MODE === "true" ? "unverified-staging" : env.PUBLIC_BETA === "true" ? "unverified-production-beta" : "writes-disabled" });
   if (!url.pathname.startsWith("/api/world/")) return new Response("Not Found", { status: 404 });
@@ -7891,13 +7891,13 @@ var runtime = createStorySessionRuntime({
   }
 });
 var StorySessionAuthority = runtime.StorySessionAuthority;
-async function handleApi2(request, env) {
+async function handleApi(request, env) {
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/story/")) return runtime.handleStoryApi(request, env);
-  return handleApi(request, env);
+  return handleWorldApi(request, env);
 }
 export {
   LettersWorld,
   StorySessionAuthority,
-  handleApi2 as handleApi
+  handleApi
 };
