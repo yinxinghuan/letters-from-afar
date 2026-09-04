@@ -28,6 +28,12 @@ const scripts = [
   'test:danger-loop',
   'test:loop-escape',
   'test:slice',
+  'test:story-session-client',
+  'test:story-session-persistence',
+  'test:story-session-directory',
+  'test:story-session-migration',
+  'test:story-session-shared-boundary',
+  'test:story-session-history-browser',
 ]
 
 for (const script of scripts) {

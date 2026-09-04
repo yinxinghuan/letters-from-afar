@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "game": "letters-from-afar",
+  "capturedAt": "2026-09-04T16:30:00+08:00",
+  "stage": "local-react-canary-passed",
+  "productionDefaultChanged": false,
+  "productionWrites": false,
+  "liveModelCalled": false,
+  "reactMounted": true,
+  "identityMode": "synthetic-loopback-qa-token",
+  "tests": [
+    "npm run check:story-session",
+    "npm run test:story-session-history-browser",
+    "npm run build"
+  ],
+  "screenshots": [
+    "_qa/ui/platform-layout-letters-from-afar-session-history-zh-390x844.png",
+    "_qa/ui/platform-layout-letters-from-afar-session-history-en-320x568.png"
+  ],
+  "verified": [
+    "React StoryGameView mounts the private session writer in an isolated loopback-only QA entry",
+    "restart creates a new private session while the old session remains explicitly switchable",
+    "unknown response survives reload, blocks new actions and reconciles to exactly one committed turn",
+    "owner and locale session directories remain isolated",
+    "session rows meet the 44 CSS pixel touch target and both mobile widths avoid horizontal overflow",
+    "the private QA view mounts no shared World Authority writer or shared-journey panel",
+    "the production wrapper still owns useLettersWorld and passes the legacy engine receipt applier",
+    "production build excludes local Story Session lab markers"
+  ],
+  "notVerified": [
+    "backend-verifiable AlterU identity",
+    "production World Authority receipt lookup during enrollment",
+    "real accounts, devices, model calls or media calls",
+    "production database migration, Worker writes, cohort, rollback or deployment"
+  ]
+}

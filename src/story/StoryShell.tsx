@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import alteruMark from './img/alteru.svg'
 import { DEFAULT_CARTRIDGE_ID, listCartridges, resolveCartridge } from './cartridges'
 import { Icon, type IconName } from './Icons'
@@ -12,6 +12,19 @@ import { decodeChoiceRecord, resolveNumberedChoiceInput } from './engine/choiceI
 import { latestReadingAnchorId } from './engine/readingAnchor'
 import { getMediaImageTask } from '../shared/runtime/media'
 import { useLettersWorld } from '../shared-world/useLettersWorld'
+import type { StorySessionDirectory } from './session/storySessionClient'
+
+export type StoryEngineView = Omit<ReturnType<typeof useStoryEngine>, 'applyRelayReceipt'> & {
+  actionBlocked?: boolean
+  fixedSource?: boolean
+  fixedLocale?: boolean
+  preservesSessionOnRestart?: boolean
+  listSessions?: () => Promise<StorySessionDirectory>
+  switchSession?: (sessionId: string) => Promise<void>
+  sessionId?: string
+}
+
+type LettersWorldView = ReturnType<typeof useLettersWorld>
 
 function useInitialCartridge() {
   return new URLSearchParams(window.location.search).get('cartridge')
@@ -140,7 +153,7 @@ function TextSizeControl({ locale, value, onChange }: { locale: Locale; value: T
 }
 
 function ConversationHeader({ cartridge, engine, audio, openWorld, textSize, setTextSize }: {
-  cartridge: StoryCartridge; engine: ReturnType<typeof useStoryEngine>; audio: ReturnType<typeof useStoryAudio>; openWorld: (active?: DrawerId, detail?: WorldDetail) => void; textSize: TextSize; setTextSize: (size: TextSize) => void
+  cartridge: StoryCartridge; engine: StoryEngineView; audio: ReturnType<typeof useStoryAudio>; openWorld: (active?: DrawerId, detail?: WorldDetail) => void; textSize: TextSize; setTextSize: (size: TextSize) => void
 }) {
   const audioActive = audio.supported && audio.active
   return <header className="st-chat-header">
@@ -206,7 +219,7 @@ function StoryBlockView({ block, cartridge, retryImage, player, characters }: { 
 }
 
 function ConversationFeed({ cartridge, engine, feedRef, endRef, onScroll, player }: {
-  cartridge: StoryCartridge; engine: ReturnType<typeof useStoryEngine>;
+  cartridge: StoryCartridge; engine: StoryEngineView;
   feedRef: React.RefObject<HTMLDivElement>; endRef: React.RefObject<HTMLDivElement>; onScroll: () => void; player: PlayerProfile
 }) {
   return <div className="st-conversation" ref={feedRef} onScroll={onScroll}>
@@ -219,7 +232,7 @@ function ConversationFeed({ cartridge, engine, feedRef, endRef, onScroll, player
   </div>
 }
 
-function Composer({ cartridge, engine, onAct }: { cartridge: StoryCartridge; engine: ReturnType<typeof useStoryEngine>; onAct: (action: string) => void }) {
+function Composer({ cartridge, engine, onAct }: { cartridge: StoryCartridge; engine: StoryEngineView; onAct: (action: string) => void }) {
   const [custom, setCustom] = useState('')
   const repliesRef = useRef<HTMLDivElement>(null)
   useEffect(() => { repliesRef.current?.scrollTo({ left: 0, behavior: 'auto' }) }, [engine.save.scene])
@@ -228,7 +241,7 @@ function Composer({ cartridge, engine, onAct }: { cartridge: StoryCartridge; eng
   const choices = hasStoryChoices ? engine.save.choices : closedCheckpoint ? [{ id: `continue-${engine.save.scene}`, label: cartridge.copy.continue }] : []
   const submit = () => {
     const value = custom.trim()
-    if (!value || engine.busy) return
+    if (!value || engine.busy || engine.actionBlocked) return
     onAct(resolveNumberedChoiceInput(value, choices)); setCustom('')
   }
   return <section className="st-composer" aria-label={t(cartridge.locale, 'reply')}>
@@ -237,13 +250,13 @@ function Composer({ cartridge, engine, onAct }: { cartridge: StoryCartridge; eng
       {choices.map((choice, index) => {
         const visualUnits = Array.from(choice.label).reduce((total, character) => total + (/[^\u0000-\u00ff]/.test(character) ? 2 : 1), 0)
         const adaptiveWidth = `${Math.min(310, Math.max(148, Math.round(132 + visualUnits * 2.5)))}px`
-        return <button key={choice.id} style={{ '--st-choice-width': adaptiveWidth } as React.CSSProperties} disabled={engine.busy} onClick={() => onAct(choice.label)}><small>{String(index + 1).padStart(2, '0')}</small><span>{choice.label}</span><Icon name="arrow" /></button>
+        return <button key={choice.id} style={{ '--st-choice-width': adaptiveWidth } as React.CSSProperties} disabled={engine.busy || engine.actionBlocked} onClick={() => onAct(choice.label)}><small>{String(index + 1).padStart(2, '0')}</small><span>{choice.label}</span><Icon name="arrow" /></button>
       })}
     </div>
     <form onSubmit={(event) => { event.preventDefault(); submit() }}>
       <Icon name="pen" />
-      <input aria-label={t(cartridge.locale, 'customAction')} value={custom} onChange={(event) => setCustom(event.target.value)} placeholder={cartridge.copy.customAction} disabled={engine.busy || closedCheckpoint} maxLength={240} />
-      <button type="button" onPointerDown={submit} disabled={!custom.trim() || engine.busy || closedCheckpoint} aria-label={t(cartridge.locale, 'sendAction')}><Icon name="arrow" /></button>
+      <input aria-label={t(cartridge.locale, 'customAction')} value={custom} onChange={(event) => setCustom(event.target.value)} placeholder={cartridge.copy.customAction} disabled={engine.busy || engine.actionBlocked || closedCheckpoint} maxLength={240} />
+      <button type="button" onPointerDown={submit} disabled={!custom.trim() || engine.busy || engine.actionBlocked || closedCheckpoint} aria-label={t(cartridge.locale, 'sendAction')}><Icon name="arrow" /></button>
     </form>
   </section>
 }
@@ -411,20 +424,47 @@ function ItemDetail({ item, cartridge }: { item: InventoryItem; cartridge: Story
 }
 
 function SystemDetail({ cartridge, engine, restart }: {
-  cartridge: StoryCartridge; engine: ReturnType<typeof useStoryEngine>; restart: () => void
+  cartridge: StoryCartridge; engine: StoryEngineView; restart: () => void
 }) {
   const [confirming, setConfirming] = useState(false)
+  const [sessions, setSessions] = useState<StorySessionDirectory['sessions']>([])
+  const [directoryState, setDirectoryState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const [switching, setSwitching] = useState('')
+  const loadSessions = useCallback(async () => {
+    if (!engine.listSessions) return
+    setDirectoryState('loading')
+    try { setSessions((await engine.listSessions()).sessions); setDirectoryState('ready') }
+    catch { setDirectoryState('error') }
+  }, [engine.listSessions])
+  useEffect(() => { void loadSessions() }, [loadSessions, engine.sessionId])
+  const switchTo = async (sessionId: string) => {
+    if (!engine.switchSession || sessionId === engine.sessionId) return
+    setSwitching(sessionId)
+    try { await engine.switchSession(sessionId) } catch { setDirectoryState('error') } finally { setSwitching('') }
+  }
+  const savedSessions = sessions.filter(entry => entry.locale === cartridge.locale)
   return <div className="st-world-detail">
     <DetailSection label={t(cartridge.locale, 'system')}><p>{t(cartridge.locale, 'segmentSaved', { n: engine.save.scene + 1 })}</p></DetailSection>
     <DetailMetrics rows={[{ label: t(cartridge.locale, 'here'), value: engine.save.sceneLocation ?? engine.save.location }, { label: t(cartridge.locale, 'system'), value: engine.save.time }]} />
+    {engine.listSessions && engine.switchSession && <section className="st-session-history">
+      <small>{t(cartridge.locale, 'sessionHistoryTitle')}</small><p>{t(cartridge.locale, 'sessionHistoryDescription')}</p>
+      {directoryState === 'loading' && <p role="status">{t(cartridge.locale, 'sessionHistoryLoading')}</p>}
+      {directoryState === 'error' && <button className="st-session-history__retry" onClick={() => void loadSessions()}>{t(cartridge.locale, 'sessionHistoryError')}</button>}
+      {directoryState === 'ready' && savedSessions.length === 0 && <p>{t(cartridge.locale, 'sessionHistoryEmpty')}</p>}
+      {savedSessions.length > 0 && <div className="st-session-history__list">{savedSessions.map(entry => {
+        const current = entry.session_id === engine.sessionId
+        const updated = entry.updated_at > 0 ? new Intl.DateTimeFormat(cartridge.locale === 'zh' ? 'zh-CN' : 'en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(entry.updated_at) : t(cartridge.locale, 'sessionHistoryLegacy')
+        return <button key={entry.session_id} onClick={() => void switchTo(entry.session_id)} disabled={current || engine.busy || Boolean(switching)} aria-current={current ? 'true' : undefined}><span><strong>{t(cartridge.locale, 'sessionHistoryScene', { n: entry.scene + 1 })}</strong><small>{updated}</small></span><b>{current ? t(cartridge.locale, 'sessionHistoryCurrent') : t(cartridge.locale, 'sessionHistorySwitch')}</b></button>
+      })}</div>}
+    </section>}
     <section className="st-world-restart">
       <small>{t(cartridge.locale, 'startOver')}</small>
-      <p>{t(cartridge.locale, 'startOverDescription')}</p>
+      <p>{t(cartridge.locale, engine.preservesSessionOnRestart ? 'sessionRestartDescription' : 'startOverDescription')}</p>
       {engine.busy && <p className="st-world-restart__busy" role="status">{t(cartridge.locale, 'startOverBusy')}</p>}
       {!confirming
         ? <button className="st-world-restart__open" onClick={() => setConfirming(true)} disabled={engine.busy}>{t(cartridge.locale, 'startOver')}</button>
         : <div className="st-world-restart__confirm" role="alert">
-          <p>{t(cartridge.locale, 'startOverWarning')}</p>
+          <p>{t(cartridge.locale, engine.preservesSessionOnRestart ? 'sessionRestartWarning' : 'startOverWarning')}</p>
           <div><button onClick={() => setConfirming(false)}>{t(cartridge.locale, 'startOverCancel')}</button><button className="is-danger" onClick={restart}>{t(cartridge.locale, 'startOverConfirm')}</button></div>
         </div>}
     </section>
@@ -443,8 +483,8 @@ function TravelerRow({ entry, history, cartridge, open }: { entry: StoryCharacte
 
 function SharedJourneyPanel({ cartridge, engine, shared }: {
   cartridge: StoryCartridge
-  engine: ReturnType<typeof useStoryEngine>
-  shared: ReturnType<typeof useLettersWorld>
+  engine: StoryEngineView
+  shared: LettersWorldView
 }) {
   const currentId = engine.save.map.find((node) => node.current)?.id
   const waitingHere = shared.view?.relayLetters.find((relay) => relay.status === 'waiting' && relay.originId === currentId)
@@ -470,7 +510,7 @@ function SharedJourneyPanel({ cartridge, engine, shared }: {
 }
 
 function WorldDrawer({ active, setActive, detail, setDetail, cartridge, engine, close, player, shared }: {
-  active: DrawerId; setActive: (id: DrawerId) => void; detail: WorldDetail | null; setDetail: (detail: WorldDetail | null) => void; cartridge: StoryCartridge; engine: ReturnType<typeof useStoryEngine>; close: () => void; player: PlayerProfile; shared: ReturnType<typeof useLettersWorld>
+  active: DrawerId; setActive: (id: DrawerId) => void; detail: WorldDetail | null; setDetail: (detail: WorldDetail | null) => void; cartridge: StoryCartridge; engine: StoryEngineView; close: () => void; player: PlayerProfile; shared?: LettersWorldView
 }) {
   const save = engine.save
   const character = detail?.type === 'character' ? save.characters.find((entry) => entry.id === detail.id) : undefined
@@ -496,7 +536,7 @@ function WorldDrawer({ active, setActive, detail, setDetail, cartridge, engine, 
     <header className={detail ? 'is-detail' : ''}>{detail ? <button onClick={() => setDetail(null)} aria-label={t(cartridge.locale, 'back')} title={t(cartridge.locale, 'back')}><Icon name="back" /></button> : <span className="st-drawer__header-spacer" />}<div><small>{detail ? t(cartridge.locale, 'openDetails') : t(cartridge.locale, 'worldRecord')}</small><h2>{detailTitle ?? cartridge.copy.title}</h2></div><button onClick={close} aria-label={t(cartridge.locale, 'close')}><Icon name="close" /></button></header>
     {!detail && <nav className="st-drawer-tabs">{(Object.keys(cartridge.drawerLabels) as DrawerId[]).map((id) => <button className={active === id ? 'is-active' : ''} onClick={() => { setDetail(null); setActive(id) }} key={id}><Icon name={drawerIcons[id]} /><span>{cartridge.drawerLabels[id]}</span></button>)}</nav>}
     {!detail && active === 'party' && <div className="st-roster"><aside className="st-relationship-overview"><Icon name="people" /><div><strong>{t(cartridge.locale, 'relationshipOverview')}</strong><span>{t(cartridge.locale, 'relationshipOverviewSummary', { people: roster.length, events: relationshipEventCount })}</span><p>{t(cartridge.locale, 'relationshipOverviewHint')}</p></div></aside>{activeCompanions.length > 0 && <p className="st-roster__group">{t(cartridge.locale, 'activeCompanions')}</p>}{activeCompanions.map((entry) => <TravelerRow entry={entry} history={relationshipsFor(entry)} cartridge={cartridge} open={() => setDetail({ type: 'character', id: entry.id })} key={entry.id} />)}{knownPeople.length > 0 && <p className="st-roster__group">{t(cartridge.locale, 'peopleEncountered')}</p>}{knownPeople.map((entry) => <TravelerRow entry={entry} history={relationshipsFor(entry)} cartridge={cartridge} open={() => setDetail({ type: 'character', id: entry.id })} key={entry.id} />)}<p className="st-roster__group">{t(cartridge.locale, 'ownJourney')}</p><button className="st-entity-row st-roster__player" onClick={() => setDetail({ type: 'player' })}><PlayerAvatar profile={player} locale={cartridge.locale} large /><div><h3>{player.name}</h3><p>{t(cartridge.locale, 'protagonist')}</p></div><strong>{t(cartridge.locale, 'you')}</strong><Icon name="arrow" /></button></div>}
-    {!detail && active === 'map' && <div className="st-map"><SharedJourneyPanel cartridge={cartridge} engine={engine} shared={shared} /><p className="st-map__progress">{t(cartridge.locale, 'placesDiscovered')} · {visibleMap.length} / {save.map.length}</p>{visibleMap.map((node, index) => <button className={`st-entity-row${node.current ? ' is-current' : ''}`} data-connected={Boolean(node.connectedTo)} onClick={() => setDetail({ type: 'map', id: node.id })} key={node.id}><small>{String(index + 1).padStart(2, '0')}</small><span>{node.label}{node.connectedTo && <i>{save.map.find((candidate) => candidate.id === node.connectedTo)?.label ?? node.connectedTo}</i>}</span>{node.current && <b>{t(cartridge.locale, 'here')}</b>}<Icon name="arrow" /></button>)}</div>}
+    {!detail && active === 'map' && <div className="st-map">{shared && <SharedJourneyPanel cartridge={cartridge} engine={engine} shared={shared} />}<p className="st-map__progress">{t(cartridge.locale, 'placesDiscovered')} · {visibleMap.length} / {save.map.length}</p>{visibleMap.map((node, index) => <button className={`st-entity-row${node.current ? ' is-current' : ''}`} data-connected={Boolean(node.connectedTo)} onClick={() => setDetail({ type: 'map', id: node.id })} key={node.id}><small>{String(index + 1).padStart(2, '0')}</small><span>{node.label}{node.connectedTo && <i>{save.map.find((candidate) => candidate.id === node.connectedTo)?.label ?? node.connectedTo}</i>}</span>{node.current && <b>{t(cartridge.locale, 'here')}</b>}<Icon name="arrow" /></button>)}</div>}
     {!detail && active === 'inventory' && <div className="st-inventory">{revealingItems && !hasCurrentItemImage && <aside className="st-inventory-reveal" aria-live="polite"><Icon name="image" /><div><strong>{cartridge.copy.itemImagingTitle}</strong><p>{cartridge.copy.itemImagingBody}</p></div><i aria-hidden="true" /></aside>}{save.inventory.map((entry) => <button className={`st-entity-row${entry.rarity ? ` is-${entry.rarity}` : ''}`} onClick={() => setDetail({ type: 'inventory', id: entry.id })} key={entry.id}><div><span>{entry.label}</span>{entry.effect && <small>{entry.effect}</small>}</div><b>× {entry.count}</b><Icon name="arrow" /></button>)}</div>}
     {!detail && active === 'log' && <div className="st-log"><button className="st-entity-row" onClick={() => setDetail({ type: 'objective' })}><div><small>{t(cartridge.locale, 'currentObjective')}</small><p>{save.objective}</p></div><Icon name="arrow" /></button>{save.relationships.map((event) => <button className="st-entity-row" onClick={() => setDetail({ type: 'relationship', id: event.id })} key={event.id}><div><small>{event.actor}</small><p>{relationshipEventLabel(event.axis, cartridge.locale)} · {t(cartridge.locale, event.delta > 0 ? 'warmer' : 'colder')}</p></div><Icon name="arrow" /></button>)}<button className="st-entity-row" onClick={() => setDetail({ type: 'system' })}><div><small>{t(cartridge.locale, 'system')}</small><p>{t(cartridge.locale, 'segmentSaved', { n: save.scene + 1 })}</p></div><Icon name="arrow" /></button></div>}
     {detail?.type === 'player' && <PlayerDetail player={player} save={save} cartridge={cartridge} focusedStatId={detail.statId} openSection={(id) => { setDetail(null); setActive(id) }} />}
@@ -509,15 +549,7 @@ function WorldDrawer({ active, setActive, detail, setDetail, cartridge, engine, 
   </section></div>
 }
 
-function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge: StoryCartridge; mode: StoryMode; chatId?: string; onSelect: (id: string) => void; onLocaleChange: (locale: Locale) => void }) {
-  const player = usePlayerProfile()
-  const engineCartridge = useMemo<StoryCartridge>(() => {
-    const authorityFirstCanary = new URLSearchParams(window.location.search).get('authority_first') === '1'
-    if (!authorityFirstCanary || !cartridge.domainRules) return cartridge
-    return { ...cartridge, domainRules: { ...cartridge.domainRules, authorityMode: 'authority-first' } }
-  }, [cartridge])
-  const engine = useStoryEngine(engineCartridge, mode, chatId, { ready: player.loaded, refUrl: player.imageRefUrl })
-  const shared = useLettersWorld(player, engine.applyRelayReceipt)
+export function StoryGameView({ cartridge, engine, player, shared, onSelect, onLocaleChange }: { cartridge: StoryCartridge; engine: StoryEngineView; player: PlayerProfile; shared?: LettersWorldView; onSelect: (id: string) => void; onLocaleChange: (locale: Locale) => void }) {
   const audio = useStoryAudio(cartridge, engine.save)
   const [worldOpen, setWorldOpen] = useState(false)
   const [worldTab, setWorldTab] = useState<DrawerId>('party')
@@ -635,6 +667,7 @@ function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge
   }
 
   const act = (action: string) => {
+    if (engine.busy || engine.actionBlocked) return
     const nextLocale = detectTextLocale(action, cartridge.locale)
     if (nextLocale !== cartridge.locale) onLocaleChange(nextLocale)
     follow.current = true
@@ -670,6 +703,18 @@ function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge
     <Composer cartridge={cartridge} engine={engine} onAct={act} />
     {worldOpen && <WorldDrawer active={worldTab} setActive={setWorldTab} detail={worldDetail} setDetail={setWorldDetail} cartridge={cartridge} engine={engine} close={() => setWorldOpen(false)} player={player} shared={shared} />}
   </main>
+}
+
+function Game({ cartridge, mode, chatId, onSelect, onLocaleChange }: { cartridge: StoryCartridge; mode: StoryMode; chatId?: string; onSelect: (id: string) => void; onLocaleChange: (locale: Locale) => void }) {
+  const player = usePlayerProfile()
+  const engineCartridge = useMemo<StoryCartridge>(() => {
+    const authorityFirstCanary = new URLSearchParams(window.location.search).get('authority_first') === '1'
+    if (!authorityFirstCanary || !cartridge.domainRules) return cartridge
+    return { ...cartridge, domainRules: { ...cartridge.domainRules, authorityMode: 'authority-first' } }
+  }, [cartridge])
+  const engine = useStoryEngine(engineCartridge, mode, chatId, { ready: player.loaded, refUrl: player.imageRefUrl })
+  const shared = useLettersWorld(player, engine.applyRelayReceipt)
+  return <StoryGameView cartridge={cartridge} engine={engine} player={player} shared={shared} onSelect={onSelect} onLocaleChange={onLocaleChange} />
 }
 
 export default function StoryShell() {

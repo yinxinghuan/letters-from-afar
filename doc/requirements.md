@@ -182,7 +182,7 @@
 - 旧私人存档以稳定 enrollment id 无损注册，客户端在第一次注册/行动请求之前保存原始 envelope；未知响应先按 previous cursor 与 action id 对账，确认未提交后才允许重放完全相同的请求。
 - 普通 `GET` 只读；持久化修复只接受固定白名单 migration id 与期望 session/ruleset version，由服务端运行本作 `normalizeSave()`。成功只增加私人 session version，不增加剧情 cursor/event，也不触碰公共世界 version/cursor。
 - `shared-relay:*` 行囊项与 `relay-receipt-*` 记录属于公共 World Authority 回执投影。含这些标记的旧存档只有在服务端校验回执后才允许 enrollment；普通私人回合和私人存档修复必须保持该投影不变，否则零写入返回 `SHARED_AUTHORITY_REQUIRED`。Story Session lab 不实现或代理 `/api/world/*`。
-- 同一 owner 的旧私人旅程保留在服务端，目录最多返回 50 条最小元数据，不包含正文、选择、事件、提示词、媒体 URL、公共世界快照或 owner。当前只完成 service/client 合同，React 历史旅程界面仍未接入。
+- 同一 owner 的旧私人旅程保留在服务端，目录最多返回 50 条最小元数据，不包含正文、选择、事件、提示词、媒体 URL、公共世界快照或 owner。本机隔离 React canary 已提供“保留的旅程”、新建旅程与明确切换，并验证未知响应刷新恢复、账号/语言隔离和窄屏可用性；正式入口仍使用既有个人引擎与公共 World Authority，尚未改变生产默认。
 
 ## 4. Controls
 

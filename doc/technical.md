@@ -24,7 +24,8 @@
 - `src/shared-world/receipt.ts`：把接力信 add/remove 回执幂等写入私人 StorySave。
 - `worker/index.js`：生产共享世界 Durable Object、动作幂等缓存、版本冲突和回执表。
 - `_design/`：首五分钟、路线与长期 200×80 回合推演。
-- `_qa/`：真实故事管线、世界扩展、共享规则和 Worker 规则测试；`world-expansion.ts` 重放草原门与湖林门，`world-expansion-inland.ts` 以中英文重放断轨盆地与赤土高原并继续执行终点调查；两者校验人物登场、稳定 ID、地点和选项依据。`run-regression.mjs` 让 `npm test` 顺序执行 27 组母引擎与本游戏验收，任一组失败即停止。
+- `src/story/session/useStorySessionEngine.ts`：只供本机隔离 React canary 使用的私人 Story Session 写入器；Web Locks 协调同一 owner/scope，多页冲突与未知响应时冻结新行动，并向系统页提供 owner-scoped 旅程目录和显式切换。
+- `_qa/`：真实故事管线、世界扩展、共享规则和 Worker 规则测试；`world-expansion.ts` 重放草原门与湖林门，`world-expansion-inland.ts` 以中英文重放断轨盆地与赤土高原并继续执行终点调查；两者校验人物登场、稳定 ID、地点和选项依据。`story-session-history-browser.mjs` 在隔离 loopback 服务中验证历史旅程、未知响应恢复、账号/语言隔离、44px 触控与两档窄屏；`run-regression.mjs` 统一执行既有 27 组及 6 组 Story Session 验收，任一组失败即停止。
 
 ## 3. 核心模块
 
@@ -37,6 +38,8 @@
 2026-09-04 本机 Story Session service/client canary 新增 `server/storySessionLab.ts`、`src/story/session/storySessionClient.ts` 与 `storySessionJournal.ts`。Lab 只绑定 loopback，以合成 bearer→owner 映射和 WAL SQLite 验证 enrollment/action 请求指纹幂等、短事务原子提交、双进程竞争、提交后丢响应与磁盘重开；浏览器 journal 在首次网络请求前保存 enrollment 或 pending envelope，未知结果先读 cursor/action id 再决定是否重放。owner-scoped 目录只回 session/ruleset/version/cursor/locale/scene/时间，restart 保留旧私人 session，switch 在 unresolved enrollment/action 时 fail closed。
 
 存量修复固定为 `letters-from-afar-save-v10-repair-2026-09-04`。普通 GET 保持只读；服务端从已存 snapshot 调用本作 `normalizeSave()`，拒绝客户端目标 snapshot，成功只增加私人 session version，不增加剧情 cursor/event。`sharedAuthorityProjection` 只比较 `shared-relay:*` 的 id/count 与 `relay-receipt-*` 的稳定回执字段：含公共回执标记的旧存档必须先通过注入的 World Authority enrollment validator；任何普通私人回合或私人迁移改变这些字段都会在事务前返回 `SHARED_AUTHORITY_REQUIRED`。Story Session lab 对 `/api/world/*` 返回 404，公共动作、grant receipt 与 ack 仍由既有 Worker 独立拥有。`_qa/story-session-shared-boundary.ts` 固定验证伪造/删除回执零写入、正常私人事务与修复保留回执，以及两套路由不混用。正式 `StoryShell/useStoryEngine`、公共 Worker、云存档、媒体、生产默认与部署均未改变；生产仍等待可验证身份、真实 receipt lookup、数据库迁移作业、备份/监控/回滚和 server-controlled cohort。
+
+React 层把既有游戏正文抽成可注入 `StoryEngineView` 的 `StoryGameView`。本机 `_qa/story-session-ui.tsx` 只注入私人 Story Session writer，不加载 `useLettersWorld`，因此不会显示共享旅人路册、签发接力信回执或调用 `/api/world/*`；正式 `Game` 包装器仍实例化原 `useStoryEngine`，并将其 `applyRelayReceipt` 交给 `useLettersWorld` 后再把两者注入视图。系统页仅在引擎声明目录能力时显示 owner/locale 范围内的“保留的旅程”；重启创建新 session，旧 session 可显式切回。此结构让私人会话 UI 可先验证，而不把服务 canary 误当成公共世界权威或生产切换。
 
 开场采用两级确定性披露：`opening` 首屏以三个可感知节拍交代玩家的临时邮路员身份、明早递送积压邮件的职责、今晚因封路留守的原因，以及写着玩家名字但没有投递记录的干信封；仍只提供两个贴近信封/投信口的动作。`openingTurns()` 第一次行动揭示未来日期，`routeTurns()` 中的档案柜/首行回合第二次才揭示盐沼路线与潮汐时限。`public-tests/opening-density.ts` 同时检查角色身份/行动动机、限制中英文首屏长度、提前出现的专有名词、首个行动段落数和后续选择数。
 
