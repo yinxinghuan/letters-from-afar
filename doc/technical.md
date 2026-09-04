@@ -74,3 +74,9 @@ cartridge 的 `audioTheme.recorded` 是录制资产清单：`music` 配置低密
 - 改视觉方向：修改 `doc/visual.md`、cartridge 图片导演字段和 Media Service prompt；不可改用 Imagine。
 - 改声音方向或换音频：先在独立媒体服务中生成候选并完成听审、响度/真峰值/时长/格式检查，再替换 `src/story/audio/assets/` 与 `audioTheme.recorded`；短促且需同帧精度的 UI 反馈继续修改 `StorySynth.ts`，不要改成远端运行时生成。
 - 接入平台强身份认证：在 Worker `/api/world/action`、`/grants`、`/grant/ack` 边界验证平台签名，并将 `PUBLIC_BETA` 关闭。
+
+## Story Session 生产迁移（2026-09-04）
+
+默认生产入口已从浏览器单写者切换到同 UUID Worker 的 Story Session 权威运行时。剧情快照、版本、事件、enrollment/action/ending 幂等结果与媒体 URL overlay 保存在 Durable Object SQLite；客户端在提交前把待处理 envelope 写入本地 journal，未知网络结果先读取权威事件再恢复。`?story_runtime=legacy` 与历史 `chat_id` 入口保留旧引擎回滚。
+
+当前缺少平台可验证的用户身份，因此使用 256-bit 随机匿名能力令牌做 owner 隔离。令牌作为旧 `StoryArchive` 的附加字段通过现有 AIGram 游戏存档同步；它能实现同令牌跨设备恢复，但不能证明真实 AlterU 用户，也不能处理令牌被复制后的冒用。旧 `worlds` 存档保留且不被 enrollment 删除。媒体仍由现有平台服务生成，稳定 request id 防止未知结果重复计费，成功 URL 回写 Story Session 且不增加剧情版本。

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/build-story-worker.mjs",
     "preview": "vite preview",
     "test": "node _qa/run-regression.mjs",
     "test:security": "tsx public-tests/protocol-security.ts",

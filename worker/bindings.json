@@ -14,10 +14,17 @@
       "type": "plain_text",
       "name": "PUBLIC_BETA",
       "text": "true"
+    },
+    {
+      "type": "durable_object_namespace",
+      "name": "STORY_SESSIONS",
+      "class_name": "StorySessionAuthority"
     }
   ],
   "migrations": {
-    "new_tag": "v1",
-    "new_sqlite_classes": ["LettersWorld"]
+    "new_tag": "story-session-v2",
+    "new_sqlite_classes": [
+      "StorySessionAuthority"
+    ]
   }
 }
